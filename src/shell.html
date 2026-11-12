@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>客服语气翻译器</title>
+<style>
+:root{color-scheme:light;--bg:#f4f7f6;--surface:#fff;--ink:#172e2b;--muted:#506662;--line:#d7e3df;--brand:#126356;--brand-deep:#0d5146;--soft:#e6f3ed;--error:#a23223;--warn:#79520c;--radius:18px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+button,input,select,textarea{font:inherit}
+button,select{cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+a{color:var(--brand-deep)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #2a9f86;outline-offset:3px}
+h1,h2,h3,p{margin:0}
+[hidden]{display:none!important}
+.wrap{width:min(1100px,100% - 48px);margin-inline:auto}
+header{background:#143d35;color:#fff}
+.header-inner{min-height:110px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+h1{font-size:clamp(24px,4.1vw,36px);letter-spacing:-.035em;line-height:1.2}
+header p{font-size:14px;color:#cbe4da;margin-top:8px}
+header a{color:#fff;text-underline-offset:4px;white-space:nowrap;font-weight:600}
+nav{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:14px 1px 11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.tab[aria-pressed=true]{color:var(--brand-deep);border-color:var(--brand)}
+main{padding-bottom:44px}
+section[aria-labelledby]{min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.toolbar label,.small-label{font-size:13px;font-weight:650;color:var(--muted);display:block;margin-bottom:6px}
+.language-options{display:flex;flex-wrap:wrap;gap:7px}
+.language-options button{background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:6px 13px;font-weight:600}
+.language-options button[aria-pressed=true]{background:var(--soft);border-color:#83b4a3;color:var(--brand-deep)}
+select,input,textarea{color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+select,input{min-height:40px}
+textarea{width:100%;resize:vertical;line-height:1.65;display:block}
+::placeholder{color:#6b807a}
+button.btn{min-height:38px;padding:7px 12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-weight:600}
+button.btn:hover:enabled{border-color:#8ab8a8;background:#f3faf6}
+button.primary{color:#fff;background:var(--brand);border-color:var(--brand)}
+button.primary:hover:enabled{color:#fff;background:var(--brand-deep)}
+button.text-button{background:none;border:0;color:var(--brand-deep);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+button.danger{color:var(--error)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.grid.match-only{grid-template-columns:1fr}
+.match-only #source{min-height:102px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.translation-card{display:flex;flex-direction:column;min-width:0}
+.card-head,.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-head h2,.card-head label,.section-head h2{font-size:17px;font-weight:720}
+.card-head span,.quiet{color:var(--muted);font-size:13px}
+#source{min-height:168px;flex:1;background:#fbfcfc}
+#translation{white-space:pre-wrap;overflow-wrap:anywhere;flex:1;min-height:168px;border:1px solid #d7e9e1;background:#f0f8f4;padding:12px 14px;border-radius:10px}
+#translation:empty::before{content:"译文会显示在这里";color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card .actions{margin-top:12px}
+.notice{font-size:13px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.notice:not(:empty){margin-top:8px}
+.notice[data-kind=error]{color:var(--error)}
+.notice[data-kind=warning]{color:var(--warn)}
+#serviceNote{margin:0 0 13px}
+.section{margin-top:26px}
+.reference-grid,.library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.phrase-card{display:flex;flex-direction:column;gap:7px;min-width:0}
+.phrase-card h3{font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap}
+.phrase-card .foreign{overflow-wrap:anywhere;white-space:pre-wrap;flex:1;color:#264e44}
+.phrase-card .literal{display:block;margin-top:5px;color:var(--muted);font-size:13px}
+.phrase-card .actions{margin-top:auto}
+.tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag{background:var(--soft);border-radius:6px;padding:1px 7px;color:var(--brand-deep);font-size:12px;overflow-wrap:anywhere;max-width:100%}
+.tag.reference{background:#f0f2f1;color:var(--muted)}
+.empty{padding:16px 0;color:var(--muted)}
+.library-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.library-toolbar input{flex:1 1 210px}
+.library-count{margin-bottom:12px}
+.library-language{margin-bottom:16px}
+#libraryMessage{margin:0 0 12px}
+#libraryMessage:empty{display:none}
+#tone-card{max-width:720px}
+#tone-text{margin-top:10px;min-height:125px}
+#tone-result{margin-top:12px;overflow-wrap:anywhere}
+#tone-result ul{padding-left:22px}
+#tone-result li{margin-bottom:6px}
+dialog{border:1px solid var(--line);border-radius:var(--radius);padding:0;width:min(620px,100% - 28px);max-height:calc(100dvh - 24px);color:var(--ink);box-shadow:0 18px 72px #102d2940}
+dialog::backdrop{background:#0b292678}
+.dialog-inner{padding:20px}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:12px 0}
+.field{display:grid;gap:4px;min-width:0;font-size:13px;font-weight:600}
+.span{grid-column:1/-1}
+.dialog-actions{justify-content:flex-end}
+#settings-form{max-width:780px}
+.settings-group{border:0;border-top:1px solid var(--line);padding:15px 0 0;margin:17px 0 0;min-width:0}
+.setting-toggle{display:flex;align-items:center;gap:10px;font-weight:650}
+.setting-toggle input{min-height:0;width:17px;height:17px;accent-color:var(--brand)}
+.settings-grid{margin:12px 0}
+.settings-help{margin:9px 0 0}
+.editor-language{padding-top:8px}
+#editor-language{max-width:240px}
+.entry-fields{display:grid;gap:10px;margin-top:10px}
+.examples{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:780px){.reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:610px){.wrap{width:calc(100% - 28px)}.grid,.reference-grid,.library-grid{grid-template-columns:1fr}.header-inner{min-height:92px}nav{gap:18px;margin-bottom:16px}.card{padding:14px}#source,#translation{min-height:120px}.section-head{align-items:start;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap header-inner">
+    <div><h1>客服语气翻译器</h1><p>常用语匹配 · 九种输出语言</p></div>
+  </div>
+</header>
+<main class="wrap">
+  <nav aria-label="功能">
+    <button class="tab" type="button" data-panel="translate-panel" aria-controls="translate-panel" aria-pressed="true">常用语匹配</button>
+    <button class="tab" type="button" data-panel="library-panel" aria-controls="library-panel" aria-pressed="false">常用语词库</button>
+    <button class="tab" type="button" data-panel="tone-panel" aria-controls="tone-panel" aria-pressed="false">英文自检</button>
+    <button class="tab" type="button" data-panel="settings-panel" aria-controls="settings-panel" aria-pressed="false">设置</button>
+  </nav>
+  <section id="translate-panel" aria-labelledby="source-label">
+    <div class="toolbar">
+      <div><p class="small-label" id="language-label">输出语言</p><div class="language-options" id="language-options" role="group" aria-labelledby="language-label"></div></div>
+    </div>
+    <p id="serviceNote" class="notice"></p>
+    <form id="translate-form" class="grid match-only">
+      <div class="card translation-card">
+        <div class="card-head"><label for="source" id="source-label">中文原文</label><span id="char-count">0 / 2000</span></div>
+        <textarea id="source" maxlength="2000" placeholder="输入中文回复或关键词，例如：退款审核中、关闭自动续费、重复扣费" required></textarea>
+        <div class="actions">
+          <button class="btn primary" id="translate-button" type="submit" hidden>实时翻译</button>
+          <button class="btn" type="button" id="clear-source">清空</button>
+          <button class="text-button" type="button" id="copy-prompt" hidden>复制改写提示词</button>
+        </div>
+      </div>
+      <div class="card translation-card" id="output-card" hidden>
+        <div class="card-head"><h2 id="target-label">英语译文</h2><span id="engine-label"></span></div>
+        <div id="translation" aria-labelledby="target-label" aria-live="polite" lang="en"></div>
+        <div class="actions">
+          <button class="btn" type="button" id="copy-result" disabled>复制译文</button>
+          <button class="btn" type="button" id="save-result" disabled>存为常用语</button>
+        </div>
+        <p class="notice" id="translate-status" role="status"></p>
+        <p class="notice" id="copy-status" role="status"></p>
+      </div>
+    </form>
+    <div class="section">
+      <div class="section-head"><h2>匹配结果</h2><span class="quiet">括号内是中文直译，复制只取外文。</span></div>
+      <div id="matches"></div>
+    </div>
+  </section>
+  <section id="library-panel" aria-labelledby="library-title" hidden>
+    <div class="section-head">
+      <h2 id="library-title">常用语词库</h2>
+      <div class="actions">
+        <button class="btn primary" id="add" type="button">新增话术</button>
+        <button class="btn" id="export" type="button">导出备份</button>
+        <button class="btn" id="import" type="button">导入备份</button>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+      </div>
+    </div>
+    <div class="library-language"><p class="small-label" id="library-language-label">显示语言</p><div class="language-options" id="library-languages" role="group" aria-labelledby="library-language-label"></div></div>
+    <div class="library-toolbar">
+      <input type="search" id="search" placeholder="搜索中文、关键词或译文" aria-label="搜索话术">
+      <select id="category" aria-label="筛选分类"></select>
+    </div>
+    <p id="library-count" class="quiet library-count"></p>
+    <p id="libraryMessage" class="notice" role="status"></p>
+    <div class="actions"><button id="undo" class="btn" type="button" hidden>撤销</button></div>
+    <div id="library-list" class="library-grid"></div>
+  </section>
+  <section id="tone-panel" aria-labelledby="tone-title" hidden>
+    <div id="tone-card" class="card">
+      <h2 id="tone-title">英文自检</h2>
+      <p class="quiet">检查常见命令式和责备式表达。</p>
+      <form id="tone-form">
+        <textarea id="tone-text" maxlength="4000" aria-label="待检查的英文" placeholder="粘贴要检查的英文客服回复" required></textarea>
+        <div class="actions"><button class="btn primary" type="submit">检查语气</button><button class="btn" id="tone-clear" type="button">清空</button></div>
+      </form>
+      <div id="tone-result" aria-live="polite"></div>
+    </div>
+  </section>
+  <section id="settings-panel" aria-labelledby="settings-title" hidden>
+    <form id="settings-form" class="card">
+      <div class="section-head"><h2 id="settings-title">设置</h2><a href="使用手册.pdf" target="_blank" rel="noopener">打开使用手册（PDF）</a></div>
+      <label class="setting-toggle"><input type="checkbox" id="settings-live">显示实时翻译</label>
+      <p class="quiet settings-help">关闭时，工作页只显示常用语匹配。匹配不需要联网。</p>
+      <div class="settings-group">
+        <label class="field">翻译模式
+          <select id="settings-mode"><option value="ai">API 客服翻译</option><option value="browser">浏览器本地翻译</option></select>
+        </label>
+        <p class="quiet settings-help" id="settings-mode-note"></p>
+        <div id="settings-api">
+          <div class="form-grid settings-grid">
+            <label class="field">API 服务商<select id="settings-provider"></select></label>
+            <label class="field">模型<select id="settings-model"></select></label>
+            <label class="field span" id="custom-model-row" hidden>自定义模型 ID<input id="settings-model-custom" maxlength="160" placeholder="输入服务商提供的模型 ID"></label>
+            <label class="field span">API 基址<input id="settings-base" maxlength="300" placeholder="例如 https://example.com/v1"></label>
+            <label class="field span">API 密钥<input type="password" id="settings-key" maxlength="500" autocomplete="off"></label>
+          </div>
+          <p class="quiet">密钥仅在当前页面使用。测试连接会发送一条固定示例，可能产生一次 API 调用费用。</p>
+          <p class="notice" id="settings-service" role="status"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit">保存设置</button>
+        <button class="btn" type="button" id="test-api">测试连接</button>
+      </div>
+      <p class="notice" id="settings-status" role="status"></p>
+    </form>
+  </section>
+</main>
+<dialog id="editor" aria-labelledby="editor-title">
+  <form id="editor-form" class="dialog-inner">
+    <div class="card-head"><h2 id="editor-title">新增话术</h2></div>
+    <p class="quiet">填写中文原文，可按需补充关键词、外文和中文直译。</p>
+    <div class="form-grid">
+      <label class="field span">中文原文<textarea id="entry-source" maxlength="2000" rows="2" required></textarea></label>
+      <label class="field">分类<input id="entry-category" maxlength="24" list="category-options" placeholder="例如：售后"></label>
+      <datalist id="category-options"></datalist>
+      <label class="field">关键词<input id="entry-keywords" maxlength="300" placeholder="用逗号分隔，例如：到账，退款进度"></label>
+    </div>
+    <div class="editor-language">
+      <label class="field" for="editor-language">编辑语种<select id="editor-language"></select></label>
+      <div id="entry-translations"></div>
+    </div>
+    <p class="notice" id="editor-status" role="status"></p>
+    <div class="actions dialog-actions">
+      <button class="btn" type="button" id="cancel-editor">取消</button>
+      <button class="btn primary" type="submit">保存话术</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="prompt-dialog" aria-labelledby="prompt-title">
+  <div class="dialog-inner">
+    <div class="card-head"><h2 id="prompt-title">改写提示词</h2></div>
+    <p class="quiet">自动复制失败。可以手动复制下方文字。</p>
+    <textarea id="prompt-text" rows="7" aria-label="改写提示词" readonly></textarea>
+    <div class="actions dialog-actions">
+      <button class="btn" type="button" id="close-prompt">关闭</button>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>

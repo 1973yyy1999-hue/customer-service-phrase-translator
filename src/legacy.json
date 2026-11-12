@@ -1,0 +1,860 @@
+[
+  {
+    "id": "base-1",
+    "zh": "你好，请问有什么可以帮你？",
+    "category": "开场",
+    "keywords": [
+      "你好",
+      "您好",
+      "有什么可以帮你",
+      "需要帮助",
+      "欢迎咨询",
+      "有什么问题",
+      "在吗"
+    ],
+    "translations": {
+      "en": "Hi there! How can I help you today?",
+      "ja": "こんにちは。本日はどのようなご用件でしょうか。",
+      "ko": "안녕하세요. 무엇을 도와드릴까요?",
+      "es": "¡Hola! ¿En qué puedo ayudarle hoy?",
+      "pt": "Olá! Como posso ajudar você hoje?"
+    }
+  },
+  {
+    "id": "base-2",
+    "zh": "我在的，请讲。",
+    "category": "开场",
+    "keywords": [
+      "我在",
+      "请讲",
+      "你说",
+      "在的",
+      "请说"
+    ],
+    "translations": {
+      "en": "I'm here — what's going on?",
+      "ja": "はい、承っております。どのようなお困りごとでしょうか。",
+      "ko": "네, 듣고 있습니다. 어떤 문제인지 말씀해 주시겠어요?",
+      "es": "Estoy aquí — cuénteme, ¿qué está pasando?",
+      "pt": "Estou aqui — me conte, o que está acontecendo?"
+    }
+  },
+  {
+    "id": "base-3",
+    "zh": "你什么问题？",
+    "category": "开场",
+    "keywords": [
+      "什么问题",
+      "怎么了",
+      "发生什么",
+      "遇到什么",
+      "说说"
+    ],
+    "translations": {
+      "en": "Could you tell me a bit more about what's happening?",
+      "ja": "どのような状況か、もう少し詳しく教えていただけますか。",
+      "ko": "어떤 상황인지 조금 더 자세히 알려주시겠어요?",
+      "es": "¿Podría contarme un poco más sobre lo que está ocurriendo?",
+      "pt": "Poderia me contar um pouco mais sobre o que está acontecendo?"
+    }
+  },
+  {
+    "id": "base-4",
+    "zh": "请问怎么称呼你？",
+    "category": "开场",
+    "keywords": [
+      "怎么称呼",
+      "姓名",
+      "名字",
+      "贵姓"
+    ],
+    "translations": {
+      "en": "May I have your name, please?",
+      "ja": "お名前を伺ってもよろしいでしょうか。",
+      "ko": "성함을 여쭤봐도 될까요?",
+      "es": "¿Me permite su nombre, por favor?",
+      "pt": "Poderia me informar seu nome, por favor?"
+    }
+  },
+  {
+    "id": "base-5",
+    "zh": "请稍等。",
+    "category": "等待",
+    "keywords": [
+      "请稍等",
+      "稍等",
+      "等一下",
+      "稍候",
+      "稍等片刻",
+      "等一会",
+      "等我一下"
+    ],
+    "translations": {
+      "en": "Could you give me a moment, please?",
+      "ja": "少々お待ちいただけますか。",
+      "ko": "잠시만 기다려 주시겠어요?",
+      "es": "¿Podría esperar un momento, por favor?",
+      "pt": "Poderia aguardar um momento, por favor?"
+    }
+  },
+  {
+    "id": "base-6",
+    "zh": "稍等，我查一下。",
+    "category": "等待",
+    "keywords": [
+      "查一下",
+      "我看一下",
+      "我看下",
+      "确认一下",
+      "核实",
+      "查询"
+    ],
+    "translations": {
+      "en": "Give me just a moment to look into this for you.",
+      "ja": "少々お時間をいただければ、すぐに調べます。",
+      "ko": "잠시만 주시면 바로 확인해 보겠습니다.",
+      "es": "Deme un momento, por favor, y lo reviso.",
+      "pt": "Me dá só um instante que eu verifico para você."
+    }
+  },
+  {
+    "id": "base-7",
+    "zh": "请耐心等待。",
+    "category": "等待",
+    "keywords": [
+      "耐心等待",
+      "再等一下",
+      "再等一会"
+    ],
+    "translations": {
+      "en": "Thank you for your patience. Could you give us a little more time?",
+      "ja": "恐れ入りますが、もうしばらくお待ちいただけますか。",
+      "ko": "기다려 주셔서 감사합니다. 조금만 더 기다려 주시겠어요?",
+      "es": "Gracias por su paciencia. ¿Podría esperar un poco más?",
+      "pt": "Agradeço pela paciência. Poderia aguardar mais um pouco?"
+    }
+  },
+  {
+    "id": "base-8",
+    "zh": "不好意思让你久等了。",
+    "category": "等待",
+    "keywords": [
+      "久等",
+      "让你等",
+      "等很久",
+      "抱歉久等"
+    ],
+    "translations": {
+      "en": "I'm sorry to have kept you waiting.",
+      "ja": "お待たせしてしまい、申し訳ございません。",
+      "ko": "오래 기다리게 해서 죄송합니다.",
+      "es": "Siento haberle hecho esperar.",
+      "pt": "Desculpe ter feito você esperar."
+    }
+  },
+  {
+    "id": "base-9",
+    "zh": "还需要一点时间。",
+    "category": "等待",
+    "keywords": [
+      "还需要时间",
+      "再等等",
+      "需要一点时间"
+    ],
+    "translations": {
+      "en": "We'll need a little more time. Thank you for your patience.",
+      "ja": "もう少しお時間をいただけますでしょうか。",
+      "ko": "시간이 조금 더 필요합니다. 기다려 주셔서 감사합니다.",
+      "es": "Necesitaremos un poco más de tiempo. Gracias por su paciencia.",
+      "pt": "Vamos precisar de mais um pouco de tempo. Agradeço pela paciência."
+    }
+  },
+  {
+    "id": "base-10",
+    "zh": "很抱歉给你带来不便。",
+    "category": "道歉",
+    "keywords": [
+      "抱歉",
+      "不便",
+      "对不起",
+      "抱歉给您"
+    ],
+    "translations": {
+      "en": "I'm really sorry for the trouble this has caused.",
+      "ja": "ご不便をおかけして、大変申し訳ございません。",
+      "ko": "불편을 드려 정말 죄송합니다.",
+      "es": "Siento mucho las molestias que esto le ha causado.",
+      "pt": "Sinto muito pelo transtorno que isso causou."
+    }
+  },
+  {
+    "id": "base-11",
+    "zh": "非常抱歉，是我们的问题。",
+    "category": "道歉",
+    "keywords": [
+      "是我们的问题",
+      "我们的错",
+      "我的错"
+    ],
+    "translations": {
+      "en": "I'm very sorry. This was our mistake.",
+      "ja": "こちらの不手際で、大変申し訳ございません。",
+      "ko": "저희 쪽 실수였습니다. 정말 죄송합니다.",
+      "es": "Lo sentimos mucho. Fue un error nuestro.",
+      "pt": "Sentimos muito. Foi um erro nosso."
+    }
+  },
+  {
+    "id": "base-12",
+    "zh": "抱歉，我无法……",
+    "category": "道歉",
+    "keywords": [
+      "我无法",
+      "我不能",
+      "做不了",
+      "没办法"
+    ],
+    "translations": {
+      "en": "I'm afraid I'm not able to…",
+      "ja": "申し訳ございませんが、私では対応いたしかねます。",
+      "ko": "죄송하지만 제가 처리해 드리기 어렵습니다.",
+      "es": "Me temo que no me es posible…",
+      "pt": "Infelizmente não consigo…"
+    }
+  },
+  {
+    "id": "base-13",
+    "zh": "请原谅我们的失误。",
+    "category": "道歉",
+    "keywords": [
+      "我们的失误",
+      "我们的疏忽",
+      "原谅"
+    ],
+    "translations": {
+      "en": "Please accept our apologies for the oversight.",
+      "ja": "こちらの不手際をお詫びいたします。",
+      "ko": "저희의 실수에 대해 사과드립니다.",
+      "es": "Le pedimos disculpas por nuestro descuido.",
+      "pt": "Pedimos desculpas pela nossa falha."
+    }
+  },
+  {
+    "id": "base-14",
+    "zh": "我理解你的着急。",
+    "category": "安抚",
+    "keywords": [
+      "理解",
+      "着急",
+      "心急",
+      "我知道你急",
+      "生气",
+      "发火",
+      "投诉",
+      "不满",
+      "烦躁"
+    ],
+    "translations": {
+      "en": "I completely understand why you're frustrated.",
+      "ja": "お気持ち、よく分かります。ご不安な点はごもっともです。",
+      "ko": "충분히 이해합니다. 답답하신 마음 잘 알고 있습니다.",
+      "es": "Entiendo perfectamente su frustración.",
+      "pt": "Entendo perfeitamente a sua frustração."
+    }
+  },
+  {
+    "id": "base-15",
+    "zh": "我明白你的感受。",
+    "category": "安抚",
+    "keywords": [
+      "明白你",
+      "感受",
+      "理解你",
+      "懂你"
+    ],
+    "translations": {
+      "en": "I hear you — that sounds really frustrating.",
+      "ja": "おっしゃる通りだと思います。大変な状況ですよね。",
+      "ko": "무슨 말씀인지 알겠습니다. 정말 답답하셨겠어요.",
+      "es": "Le entiendo — suena realmente frustrante.",
+      "pt": "Entendo você — deve ser realmente frustrante."
+    }
+  },
+  {
+    "id": "base-16",
+    "zh": "请冷静。",
+    "category": "安抚",
+    "keywords": [
+      "冷静",
+      "别激动",
+      "别生气",
+      "平静"
+    ],
+    "translations": {
+      "en": "I understand this is frustrating. Let's take this one step at a time.",
+      "ja": "ご不快なお気持ち、お察しいたします。一つずつ確認してまいりましょう。",
+      "ko": "답답하신 마음 이해합니다. 하나씩 차근차근 살펴보겠습니다.",
+      "es": "Entiendo que esto le resulte frustrante. Veámoslo paso a paso.",
+      "pt": "Entendo que isso seja frustrante. Vamos analisar a situação passo a passo."
+    }
+  },
+  {
+    "id": "base-17",
+    "zh": "别担心。",
+    "category": "安抚",
+    "keywords": [
+      "别担心",
+      "不用担心",
+      "放心"
+    ],
+    "translations": {
+      "en": "I understand your concern. Please don't worry.",
+      "ja": "ご心配かと存じますが、どうぞご安心ください。",
+      "ko": "걱정되실 수 있지만 너무 염려하지 않으셔도 됩니다.",
+      "es": "Comprendo su preocupación. Puede quedarse con tranquilidad.",
+      "pt": "Entendo a sua preocupação. Por favor, fique à vontade."
+    }
+  },
+  {
+    "id": "base-18",
+    "zh": "请提供订单号。",
+    "category": "请求",
+    "keywords": [
+      "订单号",
+      "单号",
+      "订单编号",
+      "提供订单"
+    ],
+    "translations": {
+      "en": "Could you share your order number so I can look into this?",
+      "ja": "お手数ですが、注文番号をお知らせいただけますか。",
+      "ko": "주문 번호를 알려주시면 확인해 드리겠습니다.",
+      "es": "¿Podría facilitarme su número de pedido para revisarlo?",
+      "pt": "Poderia me informar o número do pedido para eu verificar?"
+    }
+  },
+  {
+    "id": "base-19",
+    "zh": "请发截图。",
+    "category": "请求",
+    "keywords": [
+      "截图",
+      "发图",
+      "发截图",
+      "发送截图",
+      "上传截图"
+    ],
+    "translations": {
+      "en": "Could you send a screenshot, please?",
+      "ja": "スクリーンショットをお送りいただけますか。",
+      "ko": "스크린샷을 보내 주시겠어요?",
+      "es": "¿Podría enviarnos una captura de pantalla, por favor?",
+      "pt": "Poderia nos enviar uma captura de tela, por favor?"
+    }
+  },
+  {
+    "id": "base-20",
+    "zh": "请再说一遍。",
+    "category": "请求",
+    "keywords": [
+      "再说一遍",
+      "重复",
+      "没听清",
+      "再说一次"
+    ],
+    "translations": {
+      "en": "Sorry, could you say that again for me, please?",
+      "ja": "恐れ入ります、もう一度おっしゃっていただけますか。",
+      "ko": "죄송하지만 한 번만 다시 말씀해 주시겠어요?",
+      "es": "Disculpe, ¿podría repetirlo, por favor?",
+      "pt": "Desculpe, poderia repetir, por favor?"
+    }
+  },
+  {
+    "id": "base-21",
+    "zh": "你听懂了吗？",
+    "category": "请求",
+    "keywords": [
+      "听懂",
+      "明白吗",
+      "理解吗",
+      "清楚吗"
+    ],
+    "translations": {
+      "en": "Does that make sense? Just to make sure I've explained it clearly.",
+      "ja": "ここまででご不明な点はございませんか。",
+      "ko": "제가 설명을 잘 드렸는지 모르겠네요. 이해되셨을까요?",
+      "es": "¿Se entiende? Solo para asegurarme de que me expliqué bien.",
+      "pt": "Ficou claro? Só para garantir que expliquei bem."
+    }
+  },
+  {
+    "id": "base-22",
+    "zh": "请重启 App。",
+    "category": "请求",
+    "keywords": [
+      "重启",
+      "重启应用",
+      "重新打开应用",
+      "重新打开app"
+    ],
+    "translations": {
+      "en": "Could you try restarting the app, please?",
+      "ja": "アプリを一度再起動していただけますか。",
+      "ko": "앱을 한 번 재시작해 주시겠어요?",
+      "es": "¿Podría reiniciar la aplicación, por favor?",
+      "pt": "Poderia reiniciar o aplicativo, por favor?"
+    }
+  },
+  {
+    "id": "base-23",
+    "zh": "请保持电话畅通。",
+    "category": "请求",
+    "keywords": [
+      "电话",
+      "保持畅通",
+      "联系你",
+      "接电话"
+    ],
+    "translations": {
+      "en": "Could you keep your phone handy so we can reach you?",
+      "ja": "ご連絡できるよう、お電話に出やすい状態でお待ちいただけますか。",
+      "ko": "연락드릴 수 있도록 전화를 받으실 수 있는 상태로 있어 주시겠어요?",
+      "es": "¿Podría tener el teléfono a mano para que podamos localizarle?",
+      "pt": "Poderia deixar o telefone por perto para conseguirmos contato?"
+    }
+  },
+  {
+    "id": "base-24",
+    "zh": "不行。",
+    "category": "拒绝",
+    "keywords": [
+      "不行",
+      "不可以",
+      "做不到",
+      "无法办理"
+    ],
+    "translations": {
+      "en": "I'm sorry, but we aren't able to do that.",
+      "ja": "申し訳ございませんが、そちらは対応いたしかねます。",
+      "ko": "죄송하지만 해당 요청은 처리해 드리기 어렵습니다.",
+      "es": "Lo siento, pero no podemos hacerlo.",
+      "pt": "Sinto muito, mas não podemos fazer isso."
+    }
+  },
+  {
+    "id": "base-25",
+    "zh": "这是规定。",
+    "category": "拒绝",
+    "keywords": [
+      "规定",
+      "政策",
+      "制度",
+      "规则"
+    ],
+    "translations": {
+      "en": "This is how our policy works, and I'm happy to explain why.",
+      "ja": "こちらは規定に基づく対応となっております。理由も含めてご説明いたします。",
+      "ko": "이는 규정에 따른 처리입니다. 이유도 함께 설명드리겠습니다.",
+      "es": "Así funciona nuestra política, y con gusto le explico el motivo.",
+      "pt": "É assim que nossa política funciona, e posso explicar o motivo."
+    }
+  },
+  {
+    "id": "base-26",
+    "zh": "我们无法退款。",
+    "category": "拒绝",
+    "keywords": [
+      "无法退款",
+      "不能退款",
+      "不能退",
+      "不予退款",
+      "退不了",
+      "退不了款"
+    ],
+    "translations": {
+      "en": "I'm sorry, but we're unable to issue a refund.",
+      "ja": "恐れ入りますが、返金はいたしかねます。",
+      "ko": "죄송하지만 환불해 드리기 어렵습니다.",
+      "es": "Lo siento, pero no podemos realizar un reembolso.",
+      "pt": "Sinto muito, mas não podemos fazer o reembolso."
+    }
+  },
+  {
+    "id": "base-27",
+    "zh": "你错了。",
+    "category": "拒绝",
+    "keywords": [
+      "你错了",
+      "不是这样",
+      "搞错了"
+    ],
+    "translations": {
+      "en": "I think there may have been a misunderstanding — let me double-check.",
+      "ja": "おそらく行き違いがあったかと思います。私のほうでもう一度確認いたします。",
+      "ko": "아마 오해가 있으셨던 것 같습니다. 제가 다시 한번 확인해 보겠습니다.",
+      "es": "Creo que puede haber habido un malentendido — déjeme comprobarlo de nuevo.",
+      "pt": "Acho que pode ter havido um mal-entendido — deixa eu verificar de novo."
+    }
+  },
+  {
+    "id": "base-28",
+    "zh": "您可以自行取消订阅。",
+    "category": "订阅",
+    "keywords": [
+      "怎么取消",
+      "如何取消",
+      "自己取消",
+      "取消订阅",
+      "怎么退订",
+      "如何退订",
+      "解约"
+    ],
+    "translations": {
+      "en": "You can cancel the subscription yourself.",
+      "ja": "サブスクリプションはお客様ご自身で解約いただけます。",
+      "ko": "구독은 직접 해지하실 수 있습니다.",
+      "es": "Puede cancelar la suscripción por su cuenta.",
+      "pt": "Você pode cancelar a assinatura por conta própria."
+    }
+  },
+  {
+    "id": "base-29",
+    "zh": "已经帮你取消了。",
+    "category": "订阅",
+    "keywords": [
+      "已取消订阅",
+      "取消成功",
+      "取消了订阅",
+      "订阅已取消",
+      "解约了",
+      "已取消"
+    ],
+    "translations": {
+      "en": "I've canceled your subscription.",
+      "ja": "サブスクリプションを解約いたしました。",
+      "ko": "구독을 해지해 드렸습니다.",
+      "es": "He cancelado su suscripción.",
+      "pt": "Cancelei a sua assinatura."
+    }
+  },
+  {
+    "id": "base-30",
+    "zh": "这个费用不能退。",
+    "category": "订阅",
+    "keywords": [
+      "费用不退",
+      "这笔费用不能退",
+      "该费用无法退还"
+    ],
+    "translations": {
+      "en": "I'm sorry, but this charge is non-refundable.",
+      "ja": "恐れ入りますが、こちらの料金は返金いたしかねます。",
+      "ko": "죄송하지만 이 요금은 환불되지 않습니다.",
+      "es": "Lo siento, pero este cargo no es reembolsable.",
+      "pt": "Sinto muito, mas esta cobrança não é reembolsável."
+    }
+  },
+  {
+    "id": "base-31",
+    "zh": "退款需要 3-5 个工作日。",
+    "category": "订阅",
+    "keywords": [
+      "退款时间",
+      "退款多久到账",
+      "退款需要多久",
+      "退款进度"
+    ],
+    "translations": {
+      "en": "The refund takes 3–5 business days.",
+      "ja": "返金には3〜5営業日かかります。",
+      "ko": "환불에는 영업일 기준 3~5일이 걸립니다.",
+      "es": "El reembolso tarda entre 3 y 5 días hábiles.",
+      "pt": "O reembolso leva de 3 a 5 dias úteis."
+    }
+  },
+  {
+    "id": "base-32",
+    "zh": "到期会自动续费。",
+    "category": "订阅",
+    "keywords": [
+      "自动续费",
+      "到期续费",
+      "自动续订"
+    ],
+    "translations": {
+      "en": "Your subscription will renew automatically when the current period ends.",
+      "ja": "ご契約期間の満了時に、サブスクリプションは自動更新されます。",
+      "ko": "이용 기간이 끝나면 구독이 자동으로 갱신됩니다.",
+      "es": "Su suscripción se renovará automáticamente al finalizar el período actual.",
+      "pt": "Sua assinatura será renovada automaticamente quando o período atual terminar."
+    }
+  },
+  {
+    "id": "base-33",
+    "zh": "为什么还在扣费？",
+    "category": "订阅",
+    "keywords": [
+      "还在扣费",
+      "又扣费",
+      "重复扣费",
+      "扣款",
+      "扣了两次",
+      "多扣",
+      "扣了钱"
+    ],
+    "translations": {
+      "en": "I can see why that's alarming. Let me pull up the charges on your account and walk you through exactly what each one was for.",
+      "ja": "ご不安なお気持ち、よく分かります。ご請求内容を確認して、一件ずつご説明いたします。",
+      "ko": "놀라셨겠습니다. 결제 내역을 확인해서 하나씩 설명드리겠습니다.",
+      "es": "Entiendo que sea alarmante. Voy a revisar los cargos de su cuenta y le explico uno por uno.",
+      "pt": "Entendo o susto. Vou verificar as cobranças da sua conta e explicar uma por uma."
+    }
+  },
+  {
+    "id": "base-34",
+    "zh": "我们会尽快处理。",
+    "category": "进度",
+    "keywords": [
+      "尽快",
+      "马上处理",
+      "尽快处理"
+    ],
+    "translations": {
+      "en": "We'll look into this as soon as we can.",
+      "ja": "できるだけ早く対応いたします。",
+      "ko": "최대한 빨리 처리하겠습니다.",
+      "es": "Nos ocuparemos de ello lo antes posible.",
+      "pt": "Vamos tratar disso assim que possível."
+    }
+  },
+  {
+    "id": "base-35",
+    "zh": "已提交，请等待。",
+    "category": "进度",
+    "keywords": [
+      "已提交",
+      "提交了",
+      "已反馈"
+    ],
+    "translations": {
+      "en": "I've submitted this. Thank you for your patience.",
+      "ja": "提出が完了しました。少々お待ちいただけますか。",
+      "ko": "제출했습니다. 잠시만 기다려 주시겠어요?",
+      "es": "Ya lo he enviado. Gracias por su paciencia.",
+      "pt": "Já enviei. Agradeço pela paciência."
+    }
+  },
+  {
+    "id": "base-36",
+    "zh": "需要 1-3 个工作日。",
+    "category": "进度",
+    "keywords": [
+      "处理时长",
+      "处理时间"
+    ],
+    "translations": {
+      "en": "This takes 1–3 business days.",
+      "ja": "1〜3営業日かかります。",
+      "ko": "영업일 기준 1~3일이 걸립니다.",
+      "es": "El proceso tarda de 1 a 3 días hábiles.",
+      "pt": "O processo leva de 1 a 3 dias úteis."
+    }
+  },
+  {
+    "id": "base-37",
+    "zh": "有结果会通知你。",
+    "category": "进度",
+    "keywords": [
+      "通知你",
+      "有结果",
+      "告诉你",
+      "联系你"
+    ],
+    "translations": {
+      "en": "I'll let you know as soon as there's an update.",
+      "ja": "結果が出ましたらすぐにご連絡いたします。",
+      "ko": "결과가 나오는 대로 바로 알려드리겠습니다.",
+      "es": "Le avisaré en cuanto haya novedades.",
+      "pt": "Aviso assim que tiver novidades."
+    }
+  },
+  {
+    "id": "base-38",
+    "zh": "这个问题需要升级处理。",
+    "category": "升级",
+    "keywords": [
+      "升级",
+      "转交",
+      "上报",
+      "专家",
+      "二线"
+    ],
+    "translations": {
+      "en": "I'm escalating this to our specialist team so it gets the attention it deserves.",
+      "ja": "専門チームに引き継ぎ、しっかり対応させていただきます。",
+      "ko": "전문 팀에 전달해서 제대로 처리되도록 하겠습니다.",
+      "es": "Voy a escalarlo a nuestro equipo especializado para que reciba la atención que merece.",
+      "pt": "Vou encaminhar para nossa equipe especializada, para que receba a atenção devida."
+    }
+  },
+  {
+    "id": "base-39",
+    "zh": "我帮你转接。",
+    "category": "升级",
+    "keywords": [
+      "转接",
+      "转给",
+      "转人工"
+    ],
+    "translations": {
+      "en": "Let me transfer you to a colleague who can help.",
+      "ja": "担当の者におつなぎいたします。",
+      "ko": "담당자에게 연결해 드리겠습니다.",
+      "es": "Le pongo en contacto con la persona encargada.",
+      "pt": "Vou encaminhar você para a pessoa responsável."
+    }
+  },
+  {
+    "id": "base-40",
+    "zh": "这是系统问题。",
+    "category": "技术",
+    "keywords": [
+      "我们系统的问题",
+      "系统故障",
+      "系统异常"
+    ],
+    "translations": {
+      "en": "This is an issue with our system.",
+      "ja": "こちらのシステムの不具合でございます。",
+      "ko": "저희 시스템에 문제가 있습니다.",
+      "es": "Se trata de un problema en nuestro sistema.",
+      "pt": "Trata-se de um problema no nosso sistema."
+    }
+  },
+  {
+    "id": "base-41",
+    "zh": "你可以尝试清除缓存。",
+    "category": "技术",
+    "keywords": [
+      "清除缓存",
+      "清缓存",
+      "删除缓存"
+    ],
+    "translations": {
+      "en": "You could try clearing the cache.",
+      "ja": "キャッシュの削除をお試しいただけますか。",
+      "ko": "캐시를 삭제해 보시겠어요?",
+      "es": "Puede probar a borrar la caché.",
+      "pt": "Você pode tentar limpar o cache."
+    }
+  },
+  {
+    "id": "base-42",
+    "zh": "还有其他问题吗？",
+    "category": "收尾",
+    "keywords": [
+      "还有其他问题",
+      "还有问题",
+      "就这些",
+      "结束"
+    ],
+    "translations": {
+      "en": "Is there anything else I can help you with today?",
+      "ja": "ほかにご不明な点はございますか。",
+      "ko": "더 궁금하신 점이 있으실까요?",
+      "es": "¿Hay algo más en lo que pueda ayudarle hoy?",
+      "pt": "Posso ajudar em mais alguma coisa hoje?"
+    }
+  },
+  {
+    "id": "base-43",
+    "zh": "祝你生活愉快。",
+    "category": "收尾",
+    "keywords": [
+      "祝你",
+      "愉快",
+      "好的一天",
+      "再见"
+    ],
+    "translations": {
+      "en": "Have a great day!",
+      "ja": "よい一日をお過ごしください。",
+      "ko": "좋은 하루 보내세요!",
+      "es": "¡Que tenga un buen día!",
+      "pt": "Tenha um ótimo dia!"
+    }
+  },
+  {
+    "id": "base-44",
+    "zh": "感谢你的耐心。",
+    "category": "收尾",
+    "keywords": [
+      "感谢耐心",
+      "谢谢等待",
+      "耐心"
+    ],
+    "translations": {
+      "en": "Thank you so much for your patience.",
+      "ja": "ご理解とご協力、誠にありがとうございます。",
+      "ko": "기다려 주셔서 정말 감사합니다.",
+      "es": "Muchas gracias por su paciencia.",
+      "pt": "Muito obrigado pela paciência."
+    }
+  },
+  {
+    "id": "base-45",
+    "zh": "已经为您退款。",
+    "category": "退款",
+    "keywords": [
+      "已退款",
+      "已经退款",
+      "退款已处理",
+      "已经退了",
+      "已退款成功"
+    ],
+    "translations": {
+      "en": "We've issued your refund.",
+      "ja": "返金のお手続きが完了いたしました。",
+      "ko": "환불 처리가 완료되었습니다.",
+      "es": "Ya hemos emitido su reembolso.",
+      "pt": "Já emitimos o seu reembolso."
+    }
+  },
+  {
+    "id": "base-46",
+    "zh": "这笔订单可以退款。",
+    "category": "退款",
+    "keywords": [
+      "可以退款",
+      "能退款",
+      "支持退款",
+      "可以退",
+      "能退"
+    ],
+    "translations": {
+      "en": "We can issue a refund for this order.",
+      "ja": "こちらのご注文は返金が可能です。",
+      "ko": "이 주문은 환불이 가능합니다.",
+      "es": "Podemos realizar un reembolso para este pedido.",
+      "pt": "Podemos reembolsar este pedido."
+    }
+  },
+  {
+    "id": "base-47",
+    "zh": "到期不会自动续费。",
+    "category": "订阅",
+    "keywords": [
+      "不会续费",
+      "不会自动续费",
+      "到期不续费"
+    ],
+    "translations": {
+      "en": "Your subscription won't renew automatically when the current period ends.",
+      "ja": "ご契約期間の満了時に、サブスクリプションは自動更新されません。",
+      "ko": "이용 기간이 끝나면 구독은 자동으로 갱신되지 않습니다.",
+      "es": "Su suscripción no se renovará automáticamente al finalizar el período actual.",
+      "pt": "Sua assinatura não será renovada automaticamente quando o período atual terminar."
+    }
+  }
+]

@@ -1,0 +1,4545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>客服语气翻译器</title>
+<style>
+:root{color-scheme:light;--bg:#f4f7f6;--surface:#fff;--ink:#172e2b;--muted:#506662;--line:#d7e3df;--brand:#126356;--brand-deep:#0d5146;--soft:#e6f3ed;--error:#a23223;--warn:#79520c;--radius:18px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+button,input,select,textarea{font:inherit}
+button,select{cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+a{color:var(--brand-deep)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #2a9f86;outline-offset:3px}
+h1,h2,h3,p{margin:0}
+[hidden]{display:none!important}
+.wrap{width:min(1100px,100% - 48px);margin-inline:auto}
+header{background:#143d35;color:#fff}
+.header-inner{min-height:110px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+h1{font-size:clamp(24px,4.1vw,36px);letter-spacing:-.035em;line-height:1.2}
+header p{font-size:14px;color:#cbe4da;margin-top:8px}
+header a{color:#fff;text-underline-offset:4px;white-space:nowrap;font-weight:600}
+nav{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:14px 1px 11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.tab[aria-pressed=true]{color:var(--brand-deep);border-color:var(--brand)}
+main{padding-bottom:44px}
+section[aria-labelledby]{min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.toolbar label,.small-label{font-size:13px;font-weight:650;color:var(--muted);display:block;margin-bottom:6px}
+.language-options{display:flex;flex-wrap:wrap;gap:7px}
+.language-options button{background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:6px 13px;font-weight:600}
+.language-options button[aria-pressed=true]{background:var(--soft);border-color:#83b4a3;color:var(--brand-deep)}
+select,input,textarea{color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+select,input{min-height:40px}
+textarea{width:100%;resize:vertical;line-height:1.65;display:block}
+::placeholder{color:#6b807a}
+button.btn{min-height:38px;padding:7px 12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-weight:600}
+button.btn:hover:enabled{border-color:#8ab8a8;background:#f3faf6}
+button.primary{color:#fff;background:var(--brand);border-color:var(--brand)}
+button.primary:hover:enabled{color:#fff;background:var(--brand-deep)}
+button.text-button{background:none;border:0;color:var(--brand-deep);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+button.danger{color:var(--error)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.grid.match-only{grid-template-columns:1fr}
+.match-only #source{min-height:102px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.translation-card{display:flex;flex-direction:column;min-width:0}
+.card-head,.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-head h2,.card-head label,.section-head h2{font-size:17px;font-weight:720}
+.card-head span,.quiet{color:var(--muted);font-size:13px}
+#source{min-height:168px;flex:1;background:#fbfcfc}
+#translation{white-space:pre-wrap;overflow-wrap:anywhere;flex:1;min-height:168px;border:1px solid #d7e9e1;background:#f0f8f4;padding:12px 14px;border-radius:10px}
+#translation:empty::before{content:"译文会显示在这里";color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card .actions{margin-top:12px}
+.notice{font-size:13px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.notice:not(:empty){margin-top:8px}
+.notice[data-kind=error]{color:var(--error)}
+.notice[data-kind=warning]{color:var(--warn)}
+#serviceNote{margin:0 0 13px}
+.section{margin-top:26px}
+.reference-grid,.library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.phrase-card{display:flex;flex-direction:column;gap:7px;min-width:0}
+.phrase-card h3{font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap}
+.phrase-card .foreign{overflow-wrap:anywhere;white-space:pre-wrap;flex:1;color:#264e44}
+.phrase-card .literal{display:block;margin-top:5px;color:var(--muted);font-size:13px}
+.phrase-card .actions{margin-top:auto}
+.tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag{background:var(--soft);border-radius:6px;padding:1px 7px;color:var(--brand-deep);font-size:12px;overflow-wrap:anywhere;max-width:100%}
+.tag.reference{background:#f0f2f1;color:var(--muted)}
+.empty{padding:16px 0;color:var(--muted)}
+.library-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.library-toolbar input{flex:1 1 210px}
+.library-count{margin-bottom:12px}
+.library-language{margin-bottom:16px}
+#libraryMessage{margin:0 0 12px}
+#libraryMessage:empty{display:none}
+#tone-card{max-width:720px}
+#tone-text{margin-top:10px;min-height:125px}
+#tone-result{margin-top:12px;overflow-wrap:anywhere}
+#tone-result ul{padding-left:22px}
+#tone-result li{margin-bottom:6px}
+dialog{border:1px solid var(--line);border-radius:var(--radius);padding:0;width:min(620px,100% - 28px);max-height:calc(100dvh - 24px);color:var(--ink);box-shadow:0 18px 72px #102d2940}
+dialog::backdrop{background:#0b292678}
+.dialog-inner{padding:20px}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:12px 0}
+.field{display:grid;gap:4px;min-width:0;font-size:13px;font-weight:600}
+.span{grid-column:1/-1}
+.dialog-actions{justify-content:flex-end}
+#settings-form{max-width:780px}
+.settings-group{border:0;border-top:1px solid var(--line);padding:15px 0 0;margin:17px 0 0;min-width:0}
+.setting-toggle{display:flex;align-items:center;gap:10px;font-weight:650}
+.setting-toggle input{min-height:0;width:17px;height:17px;accent-color:var(--brand)}
+.settings-grid{margin:12px 0}
+.settings-help{margin:9px 0 0}
+.editor-language{padding-top:8px}
+#editor-language{max-width:240px}
+.entry-fields{display:grid;gap:10px;margin-top:10px}
+.examples{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:780px){.reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:610px){.wrap{width:calc(100% - 28px)}.grid,.reference-grid,.library-grid{grid-template-columns:1fr}.header-inner{min-height:92px}nav{gap:18px;margin-bottom:16px}.card{padding:14px}#source,#translation{min-height:120px}.section-head{align-items:start;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap header-inner">
+    <div><h1>客服语气翻译器</h1><p>常用语匹配 · 九种输出语言</p></div>
+  </div>
+</header>
+<main class="wrap">
+  <nav aria-label="功能">
+    <button class="tab" type="button" data-panel="translate-panel" aria-controls="translate-panel" aria-pressed="true">常用语匹配</button>
+    <button class="tab" type="button" data-panel="library-panel" aria-controls="library-panel" aria-pressed="false">常用语词库</button>
+    <button class="tab" type="button" data-panel="tone-panel" aria-controls="tone-panel" aria-pressed="false">英文自检</button>
+    <button class="tab" type="button" data-panel="settings-panel" aria-controls="settings-panel" aria-pressed="false">设置</button>
+  </nav>
+  <section id="translate-panel" aria-labelledby="source-label">
+    <div class="toolbar">
+      <div><p class="small-label" id="language-label">输出语言</p><div class="language-options" id="language-options" role="group" aria-labelledby="language-label"></div></div>
+    </div>
+    <p id="serviceNote" class="notice"></p>
+    <form id="translate-form" class="grid match-only">
+      <div class="card translation-card">
+        <div class="card-head"><label for="source" id="source-label">中文原文</label><span id="char-count">0 / 2000</span></div>
+        <textarea id="source" maxlength="2000" placeholder="输入中文回复或关键词，例如：退款审核中、关闭自动续费、重复扣费" required></textarea>
+        <div class="actions">
+          <button class="btn primary" id="translate-button" type="submit" hidden>实时翻译</button>
+          <button class="btn" type="button" id="clear-source">清空</button>
+          <button class="text-button" type="button" id="copy-prompt" hidden>复制改写提示词</button>
+        </div>
+      </div>
+      <div class="card translation-card" id="output-card" hidden>
+        <div class="card-head"><h2 id="target-label">英语译文</h2><span id="engine-label"></span></div>
+        <div id="translation" aria-labelledby="target-label" aria-live="polite" lang="en"></div>
+        <div class="actions">
+          <button class="btn" type="button" id="copy-result" disabled>复制译文</button>
+          <button class="btn" type="button" id="save-result" disabled>存为常用语</button>
+        </div>
+        <p class="notice" id="translate-status" role="status"></p>
+        <p class="notice" id="copy-status" role="status"></p>
+      </div>
+    </form>
+    <div class="section">
+      <div class="section-head"><h2>匹配结果</h2><span class="quiet">括号内是中文直译，复制只取外文。</span></div>
+      <div id="matches"></div>
+    </div>
+  </section>
+  <section id="library-panel" aria-labelledby="library-title" hidden>
+    <div class="section-head">
+      <h2 id="library-title">常用语词库</h2>
+      <div class="actions">
+        <button class="btn primary" id="add" type="button">新增话术</button>
+        <button class="btn" id="export" type="button">导出备份</button>
+        <button class="btn" id="import" type="button">导入备份</button>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+      </div>
+    </div>
+    <div class="library-language"><p class="small-label" id="library-language-label">显示语言</p><div class="language-options" id="library-languages" role="group" aria-labelledby="library-language-label"></div></div>
+    <div class="library-toolbar">
+      <input type="search" id="search" placeholder="搜索中文、关键词或译文" aria-label="搜索话术">
+      <select id="category" aria-label="筛选分类"></select>
+    </div>
+    <p id="library-count" class="quiet library-count"></p>
+    <p id="libraryMessage" class="notice" role="status"></p>
+    <div class="actions"><button id="undo" class="btn" type="button" hidden>撤销</button></div>
+    <div id="library-list" class="library-grid"></div>
+  </section>
+  <section id="tone-panel" aria-labelledby="tone-title" hidden>
+    <div id="tone-card" class="card">
+      <h2 id="tone-title">英文自检</h2>
+      <p class="quiet">检查常见命令式和责备式表达。</p>
+      <form id="tone-form">
+        <textarea id="tone-text" maxlength="4000" aria-label="待检查的英文" placeholder="粘贴要检查的英文客服回复" required></textarea>
+        <div class="actions"><button class="btn primary" type="submit">检查语气</button><button class="btn" id="tone-clear" type="button">清空</button></div>
+      </form>
+      <div id="tone-result" aria-live="polite"></div>
+    </div>
+  </section>
+  <section id="settings-panel" aria-labelledby="settings-title" hidden>
+    <form id="settings-form" class="card">
+      <div class="section-head"><h2 id="settings-title">设置</h2><a href="使用手册.pdf" target="_blank" rel="noopener">打开使用手册（PDF）</a></div>
+      <label class="setting-toggle"><input type="checkbox" id="settings-live">显示实时翻译</label>
+      <p class="quiet settings-help">关闭时，工作页只显示常用语匹配。匹配不需要联网。</p>
+      <div class="settings-group">
+        <label class="field">翻译模式
+          <select id="settings-mode"><option value="ai">API 客服翻译</option><option value="browser">浏览器本地翻译</option></select>
+        </label>
+        <p class="quiet settings-help" id="settings-mode-note"></p>
+        <div id="settings-api">
+          <div class="form-grid settings-grid">
+            <label class="field">API 服务商<select id="settings-provider"></select></label>
+            <label class="field">模型<select id="settings-model"></select></label>
+            <label class="field span" id="custom-model-row" hidden>自定义模型 ID<input id="settings-model-custom" maxlength="160" placeholder="输入服务商提供的模型 ID"></label>
+            <label class="field span">API 基址<input id="settings-base" maxlength="300" placeholder="例如 https://example.com/v1"></label>
+            <label class="field span">API 密钥<input type="password" id="settings-key" maxlength="500" autocomplete="off"></label>
+          </div>
+          <p class="quiet">密钥仅在当前页面使用。测试连接会发送一条固定示例，可能产生一次 API 调用费用。</p>
+          <p class="notice" id="settings-service" role="status"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit">保存设置</button>
+        <button class="btn" type="button" id="test-api">测试连接</button>
+      </div>
+      <p class="notice" id="settings-status" role="status"></p>
+    </form>
+  </section>
+</main>
+<dialog id="editor" aria-labelledby="editor-title">
+  <form id="editor-form" class="dialog-inner">
+    <div class="card-head"><h2 id="editor-title">新增话术</h2></div>
+    <p class="quiet">填写中文原文，可按需补充关键词、外文和中文直译。</p>
+    <div class="form-grid">
+      <label class="field span">中文原文<textarea id="entry-source" maxlength="2000" rows="2" required></textarea></label>
+      <label class="field">分类<input id="entry-category" maxlength="24" list="category-options" placeholder="例如：售后"></label>
+      <datalist id="category-options"></datalist>
+      <label class="field">关键词<input id="entry-keywords" maxlength="300" placeholder="用逗号分隔，例如：到账，退款进度"></label>
+    </div>
+    <div class="editor-language">
+      <label class="field" for="editor-language">编辑语种<select id="editor-language"></select></label>
+      <div id="entry-translations"></div>
+    </div>
+    <p class="notice" id="editor-status" role="status"></p>
+    <div class="actions dialog-actions">
+      <button class="btn" type="button" id="cancel-editor">取消</button>
+      <button class="btn primary" type="submit">保存话术</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="prompt-dialog" aria-labelledby="prompt-title">
+  <div class="dialog-inner">
+    <div class="card-head"><h2 id="prompt-title">改写提示词</h2></div>
+    <p class="quiet">自动复制失败。可以手动复制下方文字。</p>
+    <textarea id="prompt-text" rows="7" aria-label="改写提示词" readonly></textarea>
+    <div class="actions dialog-actions">
+      <button class="btn" type="button" id="close-prompt">关闭</button>
+    </div>
+  </div>
+</dialog>
+<script id="builtin-data" type="application/json">
+[
+  {
+    "id": "base-1",
+    "category": "开场",
+    "zh": "您好，请问有什么可以帮您？",
+    "keywords": [
+      "你好",
+      "您好",
+      "在吗",
+      "需要帮助",
+      "欢迎咨询",
+      "有什么可以帮你"
+    ],
+    "translations": {
+      "en": "Hello! How may I help you?",
+      "ja": "こんにちは。どのようなご用件でしょうか。",
+      "ko": "안녕하세요. 무엇을 도와드릴까요?",
+      "es": "¡Hola! ¿En qué puedo ayudarle?",
+      "pt": "Olá! Como posso ajudar você?",
+      "de": "Guten Tag! Wie kann ich Ihnen helfen?",
+      "fr": "Bonjour ! Comment puis-je vous aider ?",
+      "it": "Buongiorno! Come posso aiutarla?",
+      "ru": "Здравствуйте! Чем могу вам помочь?"
+    },
+    "literal": {
+      "en": "您好！请问我能为您提供什么帮助？",
+      "ja": "您好。请问您有什么事？",
+      "ko": "您好！请问我能为您提供什么帮助？",
+      "es": "您好！请问我能为您提供什么帮助？",
+      "pt": "您好！请问我能为您提供什么帮助？",
+      "de": "您好！请问我能为您提供什么帮助？",
+      "fr": "您好！请问我能为您提供什么帮助？",
+      "it": "您好！请问我能为您提供什么帮助？",
+      "ru": "您好！请问我能为您提供什么帮助？"
+    }
+  },
+  {
+    "id": "base-2",
+    "category": "开场",
+    "zh": "我在，请您说。",
+    "keywords": [
+      "我在",
+      "请讲",
+      "你说",
+      "请说",
+      "在的"
+    ],
+    "translations": {
+      "en": "I'm here to help. Please let me know what you need.",
+      "ja": "サポートを担当いたします。ご用件をお聞かせください。",
+      "ko": "도와드리겠습니다. 무엇이 필요하신지 말씀해 주세요.",
+      "es": "Estoy aquí para ayudarle. Dígame, por favor, qué necesita.",
+      "pt": "Estou aqui para ajudar. Por favor, diga como posso ajudar.",
+      "de": "Ich bin für Sie da. Bitte sagen Sie mir, wobei Sie Hilfe benötigen.",
+      "fr": "Je suis à votre disposition. Dites-moi ce dont vous avez besoin, s’il vous plaît.",
+      "it": "Sono a sua disposizione. Mi dica pure di cosa ha bisogno.",
+      "ru": "Я могу вам помочь. Пожалуйста, расскажите, что вам нужно."
+    },
+    "literal": {
+      "en": "我在为您提供帮助。请告诉我您需要什么。",
+      "ja": "我来为您提供支持。请告诉我您的来意。",
+      "ko": "我会为您提供帮助。请告诉我您需要什么。",
+      "es": "我在为您提供帮助。请告诉我您需要什么。",
+      "pt": "我在为您提供帮助。请告诉我您需要什么。",
+      "de": "我在为您提供帮助。请告诉我您需要什么。",
+      "fr": "我随时可以为您提供帮助。请告诉我您需要什么。",
+      "it": "我随时可以为您提供帮助。请告诉我您需要什么。",
+      "ru": "我在为您提供帮助。请告诉我您需要什么。"
+    }
+  },
+  {
+    "id": "base-3",
+    "category": "开场",
+    "zh": "请问您遇到了什么问题？",
+    "keywords": [
+      "什么问题",
+      "怎么了",
+      "发生什么",
+      "遇到什么",
+      "你什么问题"
+    ],
+    "translations": {
+      "en": "Could you tell me a little more about what happened?",
+      "ja": "どのようなことが起きたのか、もう少し詳しくお聞かせいただけますか。",
+      "ko": "어떤 일이 있었는지 조금 더 자세히 말씀해 주시겠습니까?",
+      "es": "¿Podría contarme con un poco más de detalle qué ha ocurrido?",
+      "pt": "Poderia me contar com um pouco mais de detalhes o que aconteceu?",
+      "de": "Könnten Sie mir etwas genauer schildern, was passiert ist?",
+      "fr": "Pourriez-vous me préciser ce qui s’est passé ?",
+      "it": "Potrebbe spiegarmi un po’ più nel dettaglio che cosa è successo?",
+      "ru": "Не могли бы вы подробнее рассказать, что произошло?"
+    },
+    "literal": {
+      "en": "请问您能详细说一下发生了什么吗？",
+      "ja": "请问您能详细说一下发生了什么吗？",
+      "ko": "请问您能详细说一下发生了什么吗？",
+      "es": "请问您能详细说一下发生了什么吗？",
+      "pt": "请问您能详细说一下发生了什么吗？",
+      "de": "请问您能详细说一下发生了什么吗？",
+      "fr": "您能具体说说发生了什么吗？",
+      "it": "请问您能详细说一下发生了什么吗？",
+      "ru": "请问您能详细说一下发生了什么吗？"
+    }
+  },
+  {
+    "id": "base-4",
+    "category": "开场",
+    "zh": "请问怎么称呼您？",
+    "keywords": [
+      "怎么称呼",
+      "姓名",
+      "名字",
+      "贵姓"
+    ],
+    "translations": {
+      "en": "How may I address you?",
+      "ja": "どのようにお呼びすればよろしいでしょうか。",
+      "ko": "어떻게 불러 드리면 될까요?",
+      "es": "¿Cómo prefiere que me dirija a usted?",
+      "pt": "Como posso me dirigir a você?",
+      "de": "Wie darf ich Sie ansprechen?",
+      "fr": "Comment puis-je vous appeler ?",
+      "it": "Come posso rivolgermi a lei?",
+      "ru": "Как я могу к вам обращаться?"
+    },
+    "literal": {
+      "en": "请问我该如何称呼您？",
+      "ja": "请问我该如何称呼您？",
+      "ko": "请问我该如何称呼您？",
+      "es": "您希望我如何称呼您？",
+      "pt": "请问我该如何称呼您？",
+      "de": "请问我该如何称呼您？",
+      "fr": "我可以怎么称呼您？",
+      "it": "请问我该如何称呼您？",
+      "ru": "请问我该如何称呼您？"
+    }
+  },
+  {
+    "id": "base-5",
+    "category": "等待",
+    "zh": "请稍等。",
+    "keywords": [
+      "请稍等",
+      "稍等",
+      "等一下",
+      "稍候",
+      "等一会",
+      "稍等片刻"
+    ],
+    "translations": {
+      "en": "Could you give me a moment, please?",
+      "ja": "少々お待ちいただけますか。",
+      "ko": "잠시만 기다려 주시겠습니까?",
+      "es": "¿Podría esperar un momento, por favor?",
+      "pt": "Poderia aguardar um momento, por favor?",
+      "de": "Könnten Sie bitte einen Moment warten?",
+      "fr": "Pourriez-vous patienter un instant, s’il vous plaît ?",
+      "it": "Potrebbe attendere un momento, per favore?",
+      "ru": "Пожалуйста, подождите немного."
+    },
+    "literal": {
+      "en": "能否请您给我一点时间？",
+      "ja": "能否请您稍等片刻？",
+      "ko": "能否请您稍等片刻？",
+      "es": "能否请您稍等片刻？",
+      "pt": "能否请您稍等片刻？",
+      "de": "能否请您稍等片刻？",
+      "fr": "能否请您稍等片刻？",
+      "it": "能否请您稍等片刻？",
+      "ru": "请您稍等一下。"
+    }
+  },
+  {
+    "id": "base-6",
+    "category": "等待",
+    "zh": "请稍等，我帮您查询一下。",
+    "keywords": [
+      "查一下",
+      "我看一下",
+      "帮您查",
+      "核实一下",
+      "稍等我查"
+    ],
+    "translations": {
+      "en": "Could you give me a moment while I check this for you?",
+      "ja": "確認いたしますので、少々お待ちいただけますか。",
+      "ko": "확인해 드릴 테니 잠시만 기다려 주시겠습니까?",
+      "es": "¿Podría esperar un momento mientras lo compruebo?",
+      "pt": "Poderia aguardar um momento enquanto verifico isso para você?",
+      "de": "Könnten Sie bitte kurz warten, während ich das für Sie prüfe?",
+      "fr": "Pourriez-vous patienter un instant pendant que je vérifie cela pour vous ?",
+      "it": "Potrebbe attendere un momento mentre verifico la situazione per lei?",
+      "ru": "Пожалуйста, подождите немного, пока я это проверю."
+    },
+    "literal": {
+      "en": "我为您核实这件事时，能否请您稍等片刻？",
+      "ja": "请稍等片刻，我会为您核实此事。",
+      "ko": "请稍等片刻，我会为您核实此事。",
+      "es": "请稍等片刻，我会为您核实此事。",
+      "pt": "请稍等片刻，我会为您核实此事。",
+      "de": "请稍等片刻，我会为您核实此事。",
+      "fr": "我为您核实这件事时，能否请您稍等片刻？",
+      "it": "请稍等片刻，我会为您核实此事。",
+      "ru": "请稍等片刻，我会为您核实此事。"
+    }
+  },
+  {
+    "id": "base-7",
+    "category": "等待",
+    "zh": "还请您再等一会儿。",
+    "keywords": [
+      "耐心等待",
+      "再等一下",
+      "再等一会",
+      "请耐心等待"
+    ],
+    "translations": {
+      "en": "Thank you for your patience. Could you give us a little more time?",
+      "ja": "お待ちいただき、ありがとうございます。もう少しお時間をいただけますか。",
+      "ko": "기다려 주셔서 감사합니다. 조금만 더 기다려 주시겠습니까?",
+      "es": "Gracias por su paciencia. ¿Podría darnos un poco más de tiempo?",
+      "pt": "Agradecemos a sua paciência. Poderia nos dar um pouco mais de tempo?",
+      "de": "Vielen Dank für Ihre Geduld. Könnten Sie uns bitte noch etwas Zeit geben?",
+      "fr": "Merci de votre patience. Pourriez-vous nous accorder encore un peu de temps ?",
+      "it": "La ringraziamo per la pazienza. Potrebbe concederci ancora un po’ di tempo?",
+      "ru": "Благодарим вас за терпение. Не могли бы вы дать нам ещё немного времени?"
+    },
+    "literal": {
+      "en": "感谢您的耐心。能否请您再给我们一点时间？",
+      "ja": "感谢您的等待。能否请您再给我们一点时间？",
+      "ko": "感谢您的等待。能否请您再等一会儿？",
+      "es": "感谢您的耐心。能否请您再给我们一点时间？",
+      "pt": "感谢您的耐心。能否请您再给我们一点时间？",
+      "de": "感谢您的耐心。能否请您再给我们一点时间？",
+      "fr": "感谢您的耐心。能否请您再给我们一点时间？",
+      "it": "感谢您的耐心。能否请您再给我们一点时间？",
+      "ru": "感谢您的耐心。能否请您再给我们一点时间？"
+    }
+  },
+  {
+    "id": "base-8",
+    "category": "等待",
+    "zh": "抱歉让您久等了。",
+    "keywords": [
+      "久等",
+      "让你等",
+      "等很久",
+      "抱歉久等",
+      "让您久等"
+    ],
+    "translations": {
+      "en": "I'm sorry to have kept you waiting.",
+      "ja": "お待たせしてしまい、申し訳ございません。",
+      "ko": "오래 기다리게 해 드려 죄송합니다.",
+      "es": "Le pido disculpas por la espera.",
+      "pt": "Peço desculpas por ter feito você esperar.",
+      "de": "Bitte entschuldigen Sie die Wartezeit.",
+      "fr": "Je vous prie de m’excuser pour l’attente.",
+      "it": "Mi scuso per averla fatta attendere.",
+      "ru": "Прошу прощения за ожидание."
+    },
+    "literal": {
+      "en": "抱歉让您等待。",
+      "ja": "抱歉让您等待。",
+      "ko": "很抱歉让您等了很久。",
+      "es": "抱歉让您等待。",
+      "pt": "抱歉让您等待。",
+      "de": "抱歉让您等待。",
+      "fr": "抱歉让您等待。",
+      "it": "抱歉让您等待。",
+      "ru": "抱歉让您等待。"
+    }
+  },
+  {
+    "id": "base-9",
+    "category": "等待",
+    "zh": "我们还需要一点时间。",
+    "keywords": [
+      "还需要时间",
+      "需要一点时间",
+      "还要等",
+      "再等等"
+    ],
+    "translations": {
+      "en": "We'll need a little more time. Thank you for your patience.",
+      "ja": "もう少しお時間をいただきます。お待ちいただき、ありがとうございます。",
+      "ko": "조금 더 시간이 필요합니다. 기다려 주셔서 감사합니다.",
+      "es": "Necesitaremos un poco más de tiempo. Gracias por su paciencia.",
+      "pt": "Precisaremos de um pouco mais de tempo. Agradecemos a sua paciência.",
+      "de": "Wir benötigen noch etwas Zeit. Vielen Dank für Ihre Geduld.",
+      "fr": "Nous aurons besoin d’un peu plus de temps. Merci de votre patience.",
+      "it": "Ci servirà ancora un po’ di tempo. La ringraziamo per la pazienza.",
+      "ru": "Нам потребуется ещё немного времени. Благодарим вас за терпение."
+    },
+    "literal": {
+      "en": "我们还需要一点时间。感谢您的耐心。",
+      "ja": "还需要一点时间。感谢您的等待。",
+      "ko": "还需要一点时间。感谢您的等待。",
+      "es": "我们还需要一点时间。感谢您的耐心。",
+      "pt": "我们还需要一点时间。感谢您的耐心。",
+      "de": "我们还需要一点时间。感谢您的耐心。",
+      "fr": "我们还需要一点时间。感谢您的耐心。",
+      "it": "我们还需要一点时间。感谢您的耐心。",
+      "ru": "我们还需要一点时间。感谢您的耐心。"
+    }
+  },
+  {
+    "id": "base-10",
+    "category": "道歉",
+    "zh": "很抱歉给您带来不便。",
+    "keywords": [
+      "给您添麻烦",
+      "不便",
+      "抱歉给您",
+      "道歉"
+    ],
+    "translations": {
+      "en": "We apologize for the inconvenience this has caused.",
+      "ja": "ご不便をおかけしましたことをお詫び申し上げます。",
+      "ko": "불편을 드려 진심으로 사과드립니다.",
+      "es": "Le pedimos disculpas por las molestias ocasionadas.",
+      "pt": "Pedimos desculpas pelo transtorno causado.",
+      "de": "Wir entschuldigen uns für die entstandenen Unannehmlichkeiten.",
+      "fr": "Nous vous prions de nous excuser pour la gêne occasionnée.",
+      "it": "Ci scusiamo per il disagio arrecato.",
+      "ru": "Приносим извинения за доставленные неудобства."
+    },
+    "literal": {
+      "en": "对于由此给您带来的不便，我们深表歉意。",
+      "ja": "对于由此给您带来的不便，我们深表歉意。",
+      "ko": "对于由此给您带来的不便，我们深表歉意。",
+      "es": "对于由此给您带来的不便，我们深表歉意。",
+      "pt": "对于由此给您带来的不便，我们深表歉意。",
+      "de": "对于由此给您带来的不便，我们深表歉意。",
+      "fr": "对于由此给您带来的不便，我们深表歉意。",
+      "it": "对于由此给您带来的不便，我们深表歉意。",
+      "ru": "对于由此给您带来的不便，我们深表歉意。"
+    }
+  },
+  {
+    "id": "base-11",
+    "category": "道歉",
+    "zh": "很抱歉，是我们这边的失误。",
+    "keywords": [
+      "是我们的问题",
+      "我们的错",
+      "我的错",
+      "我们这边的失误"
+    ],
+    "translations": {
+      "en": "We're very sorry. This was an error on our part.",
+      "ja": "こちらの不手際で、大変申し訳ございません。",
+      "ko": "저희 쪽 실수였습니다. 진심으로 사과드립니다.",
+      "es": "Lo sentimos mucho. Fue un error de nuestra parte.",
+      "pt": "Sentimos muito. Foi um erro da nossa parte.",
+      "de": "Es tut uns sehr leid. Der Fehler lag auf unserer Seite.",
+      "fr": "Nous sommes sincèrement désolés. C’était une erreur de notre part.",
+      "it": "Ci dispiace molto. È stato un errore da parte nostra.",
+      "ru": "Приносим искренние извинения. Это была ошибка с нашей стороны."
+    },
+    "literal": {
+      "en": "我们深表歉意，这是我们这边的错误。",
+      "ja": "由于我们这边的疏忽，深表歉意。",
+      "ko": "这是我们这边的失误。我们诚恳道歉。",
+      "es": "我们深表歉意，这是我们这边的错误。",
+      "pt": "我们深表歉意，这是我们这边的错误。",
+      "de": "我们深表歉意，这是我们这边的错误。",
+      "fr": "我们深表歉意，这是我们这边的错误。",
+      "it": "我们深表歉意，这是我们这边的错误。",
+      "ru": "我们深表歉意，这是我们这边的错误。"
+    }
+  },
+  {
+    "id": "base-12",
+    "category": "道歉",
+    "zh": "抱歉，这项请求我无法办理。",
+    "keywords": [
+      "我无法",
+      "我不能",
+      "做不了",
+      "没办法",
+      "无法办理"
+    ],
+    "translations": {
+      "en": "I'm sorry, but I'm unable to fulfill this request.",
+      "ja": "申し訳ございませんが、こちらのご依頼には対応いたしかねます。",
+      "ko": "죄송하지만 해당 요청은 처리해 드리기 어렵습니다.",
+      "es": "Lo siento, pero no puedo atender esta solicitud.",
+      "pt": "Sinto muito, mas não consigo atender a esta solicitação.",
+      "de": "Es tut mir leid, dass ich Ihrer Anfrage nicht nachkommen kann.",
+      "fr": "Je vous prie de m’excuser, mais je ne peux pas donner suite à cette demande.",
+      "it": "Mi dispiace, ma non posso dare seguito a questa richiesta.",
+      "ru": "К сожалению, я не могу выполнить эту просьбу."
+    },
+    "literal": {
+      "en": "很抱歉，我无法处理这项请求。",
+      "ja": "很抱歉，我无法处理这项请求。",
+      "ko": "很抱歉，我无法处理这项请求。",
+      "es": "很抱歉，我无法处理这项请求。",
+      "pt": "很抱歉，我无法处理这项请求。",
+      "de": "很抱歉，我无法处理这项请求。",
+      "fr": "很抱歉，我无法处理这项请求。",
+      "it": "很抱歉，我无法处理这项请求。",
+      "ru": "很遗憾，我无法满足这项请求。"
+    }
+  },
+  {
+    "id": "base-13",
+    "category": "道歉",
+    "zh": "请原谅我们的疏忽。",
+    "keywords": [
+      "失误",
+      "疏忽",
+      "原谅",
+      "我们的疏忽"
+    ],
+    "translations": {
+      "en": "Please accept our apologies for the oversight.",
+      "ja": "こちらの確認不足をお詫び申し上げます。",
+      "ko": "저희의 부주의에 대해 사과드립니다.",
+      "es": "Le pedimos disculpas por este descuido.",
+      "pt": "Pedimos desculpas por essa falha.",
+      "de": "Bitte entschuldigen Sie dieses Versäumnis.",
+      "fr": "Nous vous prions de nous excuser pour cet oubli.",
+      "it": "Le porgiamo le nostre scuse per questa svista.",
+      "ru": "Примите наши извинения за эту оплошность."
+    },
+    "literal": {
+      "en": "请接受我们对这次疏忽的道歉。",
+      "ja": "对于我们核实不够周全一事，谨致歉意。",
+      "ko": "请接受我们对这次疏忽的道歉。",
+      "es": "请接受我们对这次疏忽的道歉。",
+      "pt": "请接受我们对这次疏忽的道歉。",
+      "de": "请接受我们对这次疏忽的道歉。",
+      "fr": "我们为这次遗漏向您道歉。",
+      "it": "请接受我们对这次疏忽的道歉。",
+      "ru": "请接受我们对这次疏忽的道歉。"
+    }
+  },
+  {
+    "id": "base-14",
+    "category": "安抚",
+    "zh": "我理解您现在很着急。",
+    "keywords": [
+      "着急",
+      "心急",
+      "我知道你急",
+      "理解您很着急"
+    ],
+    "translations": {
+      "en": "I understand that this is urgent for you.",
+      "ja": "お急ぎのところと承知しております。",
+      "ko": "이 일이 고객님께 긴급하다는 점을 이해합니다.",
+      "es": "Entiendo que este asunto es urgente para usted.",
+      "pt": "Entendo que essa questão é urgente para você.",
+      "de": "Ich verstehe, dass diese Angelegenheit für Sie dringend ist.",
+      "fr": "Je comprends que cette situation est urgente pour vous.",
+      "it": "Capisco che per lei si tratta di una questione urgente.",
+      "ru": "Я понимаю, что для вас это срочный вопрос."
+    },
+    "literal": {
+      "en": "我明白这件事对您来说很紧急。",
+      "ja": "我知道您现在很着急。",
+      "ko": "我明白这件事对您来说很紧急。",
+      "es": "我明白这件事对您来说很紧急。",
+      "pt": "我明白这件事对您来说很紧急。",
+      "de": "我明白这件事对您来说很紧急。",
+      "fr": "我明白这件事对您来说很紧急。",
+      "it": "我明白这件事对您来说很紧急。",
+      "ru": "我明白这件事对您来说很紧急。"
+    }
+  },
+  {
+    "id": "base-15",
+    "category": "安抚",
+    "zh": "我理解这件事让您很困扰。",
+    "keywords": [
+      "明白你",
+      "感受",
+      "理解你",
+      "烦躁",
+      "困扰",
+      "很不满"
+    ],
+    "translations": {
+      "en": "I understand how frustrating this has been for you.",
+      "ja": "ご不快なお気持ち、お察しいたします。",
+      "ko": "이 일로 얼마나 답답하셨을지 이해합니다.",
+      "es": "Entiendo lo frustrante que ha sido esto para usted.",
+      "pt": "Entendo como essa situação tem sido frustrante para você.",
+      "de": "Ich verstehe, wie belastend diese Situation für Sie war.",
+      "fr": "Je comprends à quel point cette situation a pu être frustrante pour vous.",
+      "it": "Capisco quanto questa situazione possa essere stata frustrante per lei.",
+      "ru": "Понимаю, насколько неприятной для вас оказалась эта ситуация."
+    },
+    "literal": {
+      "en": "我理解这件事让您感到困扰。",
+      "ja": "我能体会到您的不愉快。",
+      "ko": "我理解这件事让您感到困扰。",
+      "es": "我理解这件事让您感到困扰。",
+      "pt": "我理解这件事让您感到困扰。",
+      "de": "我理解这件事让您感到困扰。",
+      "fr": "我理解这件事让您感到困扰。",
+      "it": "我理解这件事让您感到困扰。",
+      "ru": "我理解这件事让您感到困扰。"
+    }
+  },
+  {
+    "id": "base-16",
+    "category": "安抚",
+    "zh": "我们可以一步一步确认。",
+    "keywords": [
+      "冷静",
+      "别激动",
+      "别生气",
+      "一步一步",
+      "逐项确认"
+    ],
+    "translations": {
+      "en": "Let's go through this one step at a time.",
+      "ja": "一つずつ確認してまいりましょう。",
+      "ko": "하나씩 차근차근 확인해 보겠습니다.",
+      "es": "Revisemos la situación paso a paso.",
+      "pt": "Vamos verificar a situação passo a passo.",
+      "de": "Lassen Sie uns die Situation Schritt für Schritt durchgehen.",
+      "fr": "Examinons la situation étape par étape.",
+      "it": "Esaminiamo la situazione un passo alla volta.",
+      "ru": "Давайте разберёмся в ситуации шаг за шагом."
+    },
+    "literal": {
+      "en": "我们可以逐项核实情况。",
+      "ja": "我们可以逐项核实情况。",
+      "ko": "我会逐项进行核实。",
+      "es": "我们可以逐项核实情况。",
+      "pt": "我们可以逐项核实情况。",
+      "de": "我们可以逐项核实情况。",
+      "fr": "我们可以逐项核实情况。",
+      "it": "我们可以逐项核实情况。",
+      "ru": "我们可以逐项核实情况。"
+    }
+  },
+  {
+    "id": "base-17",
+    "category": "安抚",
+    "zh": "我理解您的担忧，我会帮您确认。",
+    "keywords": [
+      "别担心",
+      "不用担心",
+      "放心",
+      "理解担忧",
+      "我帮您确认"
+    ],
+    "translations": {
+      "en": "I understand your concern, and I'll look into this for you.",
+      "ja": "ご心配のことと存じます。こちらで確認いたします。",
+      "ko": "걱정되시는 점을 이해합니다. 제가 확인해 드리겠습니다.",
+      "es": "Entiendo su preocupación y voy a revisar el asunto.",
+      "pt": "Entendo a sua preocupação e vou verificar a situação para você.",
+      "de": "Ich verstehe Ihre Sorge und werde den Sachverhalt für Sie prüfen.",
+      "fr": "Je comprends votre inquiétude et je vais vérifier la situation pour vous.",
+      "it": "Capisco la sua preoccupazione e verificherò la situazione per lei.",
+      "ru": "Понимаю ваше беспокойство. Я проверю эту ситуацию."
+    },
+    "literal": {
+      "en": "我理解您的顾虑，会帮您核实情况。",
+      "ja": "我理解您可能会担心。我会为您核实。",
+      "ko": "我理解您的顾虑，会帮您核实情况。",
+      "es": "我理解您的顾虑，会帮您核实情况。",
+      "pt": "我理解您的顾虑，会帮您核实情况。",
+      "de": "我理解您的顾虑，会帮您核实情况。",
+      "fr": "我理解您的顾虑，会帮您核实情况。",
+      "it": "我理解您的顾虑，会帮您核实情况。",
+      "ru": "我理解您的顾虑，会帮您核实情况。"
+    }
+  },
+  {
+    "id": "base-18",
+    "category": "请求",
+    "zh": "请提供订单号。",
+    "keywords": [
+      "订单号",
+      "单号",
+      "订单编号",
+      "提供订单",
+      "发订单号"
+    ],
+    "translations": {
+      "en": "Could you share your order number, please?",
+      "ja": "注文番号をお知らせいただけますか。",
+      "ko": "주문 번호를 알려 주시겠습니까?",
+      "es": "¿Podría facilitarme su número de pedido, por favor?",
+      "pt": "Poderia me informar o número do pedido, por favor?",
+      "de": "Könnten Sie mir bitte Ihre Bestellnummer mitteilen?",
+      "fr": "Pourriez-vous me communiquer votre numéro de commande, s’il vous plaît ?",
+      "it": "Potrebbe indicarmi il numero dell’ordine, per favore?",
+      "ru": "Не могли бы вы сообщить номер заказа?"
+    },
+    "literal": {
+      "en": "能否请您提供订单号？",
+      "ja": "能否请您提供订单号？",
+      "ko": "能否请您提供订单号？",
+      "es": "能否请您提供订单号？",
+      "pt": "能否请您提供订单号？",
+      "de": "能否请您提供订单号？",
+      "fr": "能否请您提供订单号？",
+      "it": "能否请您提供订单号？",
+      "ru": "您能否告知订单号？"
+    }
+  },
+  {
+    "id": "base-19",
+    "category": "请求",
+    "zh": "请发送截图。",
+    "keywords": [
+      "截图",
+      "发图",
+      "发截图",
+      "发送截图",
+      "上传截图"
+    ],
+    "translations": {
+      "en": "Could you send us a screenshot, please?",
+      "ja": "スクリーンショットをお送りいただけますか。",
+      "ko": "스크린샷을 보내 주시겠습니까?",
+      "es": "¿Podría enviarnos una captura de pantalla, por favor?",
+      "pt": "Poderia nos enviar uma captura de tela, por favor?",
+      "de": "Könnten Sie uns bitte einen Screenshot senden?",
+      "fr": "Pourriez-vous nous envoyer une capture d’écran, s’il vous plaît ?",
+      "it": "Potrebbe inviarci una schermata, per favore?",
+      "ru": "Не могли бы вы отправить нам снимок экрана?"
+    },
+    "literal": {
+      "en": "能否请您发给我们一张截图？",
+      "ja": "能否请您发一张截图？",
+      "ko": "能否请您发一张截图？",
+      "es": "能否请您发给我们一张截图？",
+      "pt": "能否请您发给我们一张截图？",
+      "de": "能否请您发给我们一张截图？",
+      "fr": "能否请您发给我们一张截图？",
+      "it": "能否请您发给我们一张截图？",
+      "ru": "能否请您发给我们一张截图？"
+    }
+  },
+  {
+    "id": "base-20",
+    "category": "请求",
+    "zh": "麻烦您再说一遍。",
+    "keywords": [
+      "再说一遍",
+      "重复一下",
+      "没听清",
+      "再说一次"
+    ],
+    "translations": {
+      "en": "Sorry, could you repeat that, please?",
+      "ja": "恐れ入りますが、もう一度おっしゃっていただけますか。",
+      "ko": "죄송하지만 한 번 더 말씀해 주시겠습니까?",
+      "es": "Disculpe, ¿podría repetirlo, por favor?",
+      "pt": "Desculpe, poderia repetir, por favor?",
+      "de": "Entschuldigen Sie, könnten Sie das bitte wiederholen?",
+      "fr": "Pardon, pourriez-vous répéter, s’il vous plaît ?",
+      "it": "Mi scusi, potrebbe ripeterlo, per favore?",
+      "ru": "Извините, не могли бы вы повторить?"
+    },
+    "literal": {
+      "en": "不好意思，能否请您再说一遍？",
+      "ja": "不好意思，能否请您再说一遍？",
+      "ko": "不好意思，能否请您再说一遍？",
+      "es": "不好意思，能否请您再说一遍？",
+      "pt": "不好意思，能否请您再说一遍？",
+      "de": "不好意思，能否请您再说一遍？",
+      "fr": "不好意思，能否请您再说一遍？",
+      "it": "不好意思，能否请您再说一遍？",
+      "ru": "不好意思，能否请您再说一遍？"
+    }
+  },
+  {
+    "id": "base-21",
+    "category": "请求",
+    "zh": "请问刚才的说明清楚吗？",
+    "keywords": [
+      "听懂",
+      "明白吗",
+      "理解吗",
+      "清楚吗",
+      "解释清楚"
+    ],
+    "translations": {
+      "en": "Was my explanation clear?",
+      "ja": "ご説明で分かりにくい点はございませんでしたか。",
+      "ko": "제 설명이 이해하기 쉬웠는지 여쭤봐도 될까요?",
+      "es": "¿He podido explicarlo con claridad?",
+      "pt": "Consegui explicar com clareza?",
+      "de": "War meine Erklärung verständlich?",
+      "fr": "Est-ce que mon explication était claire ?",
+      "it": "La mia spiegazione è stata chiara?",
+      "ru": "Удалось ли мне объяснить всё понятно?"
+    },
+    "literal": {
+      "en": "请问我的说明是否清楚？",
+      "ja": "请问说明里有没有难以理解的地方？",
+      "ko": "我可以问一下，我的说明是否容易理解吗？",
+      "es": "我解释清楚了吗？",
+      "pt": "我解释清楚了吗？",
+      "de": "请问我的说明是否清楚？",
+      "fr": "请问我的说明是否清楚？",
+      "it": "请问我的说明是否清楚？",
+      "ru": "我解释清楚了吗？"
+    }
+  },
+  {
+    "id": "base-22",
+    "category": "请求",
+    "zh": "请尝试重启应用。",
+    "keywords": [
+      "重启",
+      "重新打开应用",
+      "重启app",
+      "重启应用"
+    ],
+    "translations": {
+      "en": "Could you try restarting the app, please?",
+      "ja": "アプリの再起動をお試しいただけますか。",
+      "ko": "앱을 재시작해 보시겠습니까?",
+      "es": "¿Podría probar a reiniciar la aplicación, por favor?",
+      "pt": "Poderia tentar reiniciar o aplicativo, por favor?",
+      "de": "Könnten Sie bitte versuchen, die App neu zu starten?",
+      "fr": "Pourriez-vous essayer de redémarrer l’application, s’il vous plaît ?",
+      "it": "Potrebbe provare a riavviare l’applicazione, per favore?",
+      "ru": "Не могли бы вы попробовать перезапустить приложение?"
+    },
+    "literal": {
+      "en": "能否请您试着重新启动应用？",
+      "ja": "能否请您试着重新启动应用？",
+      "ko": "能否请您试着重新启动应用？",
+      "es": "能否请您试着重新启动应用？",
+      "pt": "能否请您试着重新启动应用？",
+      "de": "能否请您试着重新启动应用？",
+      "fr": "能否请您试着重新启动应用？",
+      "it": "能否请您试着重新启动应用？",
+      "ru": "能否请您试着重新启动应用？"
+    }
+  },
+  {
+    "id": "base-23",
+    "category": "请求",
+    "zh": "请保持电话畅通。",
+    "keywords": [
+      "保持畅通",
+      "电话畅通",
+      "接电话",
+      "电话联系"
+    ],
+    "translations": {
+      "en": "Could you keep your phone nearby so we can reach you?",
+      "ja": "ご連絡できるよう、お電話に出られる状態にしていただけますか。",
+      "ko": "연락드릴 수 있도록 전화를 받을 수 있는 상태로 두시겠습니까?",
+      "es": "¿Podría tener el teléfono a mano para que podamos comunicarnos con usted?",
+      "pt": "Poderia manter o telefone por perto para que possamos entrar em contato?",
+      "de": "Könnten Sie Ihr Telefon bitte griffbereit halten, damit wir Sie erreichen können?",
+      "fr": "Pourriez-vous garder votre téléphone à portée de main pour que nous puissions vous joindre ?",
+      "it": "Potrebbe tenere il telefono a portata di mano, così potremo contattarla?",
+      "ru": "Пожалуйста, оставайтесь на связи, чтобы мы могли вам позвонить."
+    },
+    "literal": {
+      "en": "能否请您把手机放在手边，以便我们联系您？",
+      "ja": "为了方便我们联系您，能否请您保持可以接听电话的状态？",
+      "ko": "为了方便我们联系您，能否请您保持可以接听电话的状态？",
+      "es": "能否请您把手机放在手边，以便我们联系您？",
+      "pt": "能否请您把手机放在手边，以便我们联系您？",
+      "de": "能否请您把手机放在手边，以便我们联系您？",
+      "fr": "能否请您把手机放在手边，以便我们联系您？",
+      "it": "能否请您把手机放在手边，以便我们联系您？",
+      "ru": "请您保持联系，以便我们可以给您打电话。"
+    }
+  },
+  {
+    "id": "base-24",
+    "category": "拒绝",
+    "zh": "很抱歉，我们无法满足这项请求。",
+    "keywords": [
+      "不行",
+      "不可以",
+      "做不到",
+      "无法满足",
+      "不能办理"
+    ],
+    "translations": {
+      "en": "We're sorry, but we're unable to fulfill this request.",
+      "ja": "申し訳ございませんが、こちらのご要望にはお応えいたしかねます。",
+      "ko": "죄송하지만 해당 요청을 처리해 드릴 수 없습니다.",
+      "es": "Lo sentimos, pero no podemos atender esta solicitud.",
+      "pt": "Sentimos muito, mas não podemos atender a esta solicitação.",
+      "de": "Es tut uns leid, dass wir Ihrer Anfrage nicht nachkommen können.",
+      "fr": "Nous sommes désolés de ne pas pouvoir donner suite à cette demande.",
+      "it": "Ci dispiace, ma non possiamo dare seguito a questa richiesta.",
+      "ru": "К сожалению, мы не можем выполнить эту просьбу."
+    },
+    "literal": {
+      "en": "很抱歉，我们无法满足这项请求。",
+      "ja": "很抱歉，我们无法满足这项请求。",
+      "ko": "很抱歉，我们无法满足这项请求。",
+      "es": "很抱歉，我们无法满足这项请求。",
+      "pt": "很抱歉，我们无法满足这项请求。",
+      "de": "很抱歉，我们无法满足这项请求。",
+      "fr": "很抱歉，我们无法满足这项请求。",
+      "it": "很抱歉，我们无法满足这项请求。",
+      "ru": "很遗憾，我们无法满足这项请求。"
+    }
+  },
+  {
+    "id": "base-25",
+    "category": "拒绝",
+    "zh": "这项处理依据我们的政策。",
+    "keywords": [
+      "规定",
+      "政策",
+      "制度",
+      "规则",
+      "按政策"
+    ],
+    "translations": {
+      "en": "This is based on our policy. I can explain which terms apply.",
+      "ja": "弊社の方針に基づく対応です。適用される条項をご説明できます。",
+      "ko": "저희 정책에 따른 처리입니다. 적용되는 조항을 설명해 드릴 수 있습니다.",
+      "es": "Esta decisión se basa en nuestra política. Puedo explicarle qué condiciones se aplican.",
+      "pt": "Esse procedimento segue nossa política. Posso explicar quais condições se aplicam.",
+      "de": "Dieses Vorgehen beruht auf unseren Richtlinien. Ich kann Ihnen erläutern, welche Bedingungen gelten.",
+      "fr": "Cette décision s’appuie sur notre politique. Je peux vous expliquer les conditions qui s’appliquent.",
+      "it": "Questa decisione si basa sulla nostra politica. Posso spiegarle quali condizioni si applicano.",
+      "ru": "Мы действуем в соответствии с нашими правилами. Я могу объяснить, какие условия применяются."
+    },
+    "literal": {
+      "en": "这项处理依据我们的政策。我可以为您说明适用条款。",
+      "ja": "这项处理依据我们的政策。我可以为您说明适用条款。",
+      "ko": "这项处理依据我们的政策。我可以为您说明适用条款。",
+      "es": "该决定依据我们的政策。我可以向您解释哪些条件适用。",
+      "pt": "这项处理依据我们的政策。我可以为您说明适用条款。",
+      "de": "这项处理依据我们的政策。我可以为您说明适用条款。",
+      "fr": "该决定依据我们的政策。我可以向您解释哪些条件适用。",
+      "it": "该决定依据我们的政策。我可以向您解释哪些条件适用。",
+      "ru": "我们按自己的规则处理。我可以解释哪些条件适用。"
+    }
+  },
+  {
+    "id": "base-26",
+    "category": "退款",
+    "zh": "很抱歉，这笔订单无法办理退款。",
+    "keywords": [
+      "无法退款",
+      "不能退款",
+      "不予退款",
+      "退不了款",
+      "不能退钱",
+      "这笔订单不能退"
+    ],
+    "translations": {
+      "en": "We're sorry, but we’re unable to issue a refund for this order.",
+      "ja": "申し訳ございませんが、こちらのご注文は返金いたしかねます。",
+      "ko": "죄송하지만 이 주문은 환불해 드릴 수 없습니다.",
+      "es": "Lo sentimos, pero no podemos reembolsar este pedido.",
+      "pt": "Sentimos muito, mas não podemos reembolsar este pedido.",
+      "de": "Es tut uns leid, dass wir für diese Bestellung keine Erstattung veranlassen können.",
+      "fr": "Nous sommes désolés de ne pas pouvoir rembourser cette commande.",
+      "it": "Ci dispiace, ma non possiamo emettere un rimborso per questo ordine.",
+      "ru": "К сожалению, мы не можем оформить возврат средств по этому заказу."
+    },
+    "literal": {
+      "en": "很抱歉，我们无法为这笔订单办理退款。",
+      "ja": "很抱歉，我们无法为这笔订单办理退款。",
+      "ko": "很抱歉，我们无法为这笔订单办理退款。",
+      "es": "很抱歉，我们无法为这笔订单办理退款。",
+      "pt": "很抱歉，我们无法为这笔订单办理退款。",
+      "de": "很抱歉，我们无法为这笔订单办理退款。",
+      "fr": "很抱歉，我们无法为这笔订单办理退款。",
+      "it": "很抱歉，我们无法为这笔订单办理退款。",
+      "ru": "很抱歉，我们无法为这笔订单办理退款。"
+    }
+  },
+  {
+    "id": "base-27",
+    "category": "安抚",
+    "zh": "这里可能有些误会，我再核实一下。",
+    "keywords": [
+      "你错了",
+      "不是这样",
+      "搞错了",
+      "误会",
+      "再核实"
+    ],
+    "translations": {
+      "en": "There may have been a misunderstanding. I'll check again.",
+      "ja": "行き違いがあったかもしれません。改めて確認いたします。",
+      "ko": "서로 이해한 내용에 차이가 있었을 수 있습니다. 다시 확인하겠습니다.",
+      "es": "Es posible que haya habido un malentendido. Voy a comprobarlo de nuevo.",
+      "pt": "Pode ter havido um mal-entendido. Vou verificar novamente.",
+      "de": "Möglicherweise liegt ein Missverständnis vor. Ich prüfe das noch einmal.",
+      "fr": "Il y a peut-être eu un malentendu. Je vais vérifier à nouveau.",
+      "it": "Potrebbe esserci stato un malinteso. Verificherò di nuovo.",
+      "ru": "Возможно, возникло недоразумение. Я проверю это ещё раз."
+    },
+    "literal": {
+      "en": "可能出现了一些误会，我会再核实一次。",
+      "ja": "可能出现了一些误会，我会再核实一次。",
+      "ko": "可能出现了一些误会，我会再核实一次。",
+      "es": "可能出现了一些误会，我会再核实一次。",
+      "pt": "可能出现了一些误会，我会再核实一次。",
+      "de": "可能出现了一些误会，我会再核实一次。",
+      "fr": "可能出现了一些误会，我会再核实一次。",
+      "it": "可能出现了一些误会，我会再核实一次。",
+      "ru": "可能出现了一些误会，我会再核实一次。"
+    }
+  },
+  {
+    "id": "base-28",
+    "category": "订阅",
+    "zh": "您可以在订阅设置中自行取消订阅。",
+    "keywords": [
+      "怎么取消",
+      "如何取消",
+      "自行取消",
+      "自己取消",
+      "取消订阅步骤",
+      "怎么退订",
+      "如何解约"
+    ],
+    "translations": {
+      "en": "You can cancel your subscription in your subscription settings.",
+      "ja": "サブスクリプションの設定画面から解約のお手続きができます。",
+      "ko": "구독 설정에서 구독을 해지하실 수 있습니다.",
+      "es": "Puede cancelar su suscripción en la configuración de la suscripción.",
+      "pt": "Você pode cancelar sua assinatura nas configurações da assinatura.",
+      "de": "Sie können Ihr Abonnement in den Abonnementeinstellungen kündigen.",
+      "fr": "Vous pouvez résilier votre abonnement dans les paramètres de l’abonnement.",
+      "it": "Può annullare l’abbonamento dalle relative impostazioni.",
+      "ru": "Вы можете отменить подписку в её настройках."
+    },
+    "literal": {
+      "en": "您可以在订阅设置中取消订阅。",
+      "ja": "您可以在订阅设置中取消订阅。",
+      "ko": "您可以在订阅设置中取消订阅。",
+      "es": "您可以在订阅设置中取消订阅。",
+      "pt": "您可以在订阅设置中取消订阅。",
+      "de": "您可以在订阅设置中取消订阅。",
+      "fr": "您可以在订阅设置中取消订阅。",
+      "it": "您可以在订阅设置中取消订阅。",
+      "ru": "您可以在订阅设置中取消订阅。"
+    }
+  },
+  {
+    "id": "base-29",
+    "category": "订阅",
+    "zh": "我们已为您取消订阅。",
+    "keywords": [
+      "已取消订阅",
+      "已经取消订阅",
+      "取消成功",
+      "订阅已取消",
+      "已取消",
+      "解约了",
+      "已经帮你取消了"
+    ],
+    "translations": {
+      "en": "We've canceled your subscription.",
+      "ja": "サブスクリプションの解約手続きが完了いたしました。",
+      "ko": "고객님의 구독을 해지해 드렸습니다.",
+      "es": "Hemos cancelado su suscripción.",
+      "pt": "Cancelamos sua assinatura.",
+      "de": "Wir haben Ihr Abonnement gekündigt.",
+      "fr": "Nous avons résilié votre abonnement.",
+      "it": "Abbiamo annullato il suo abbonamento.",
+      "ru": "Мы отменили вашу подписку."
+    },
+    "literal": {
+      "en": "我们已取消您的订阅。",
+      "ja": "我们已取消您的订阅。",
+      "ko": "我们已取消您的订阅。",
+      "es": "我们已取消您的订阅。",
+      "pt": "我们已取消您的订阅。",
+      "de": "我们已取消您的订阅。",
+      "fr": "我们已取消您的订阅。",
+      "it": "我们已取消您的订阅。",
+      "ru": "我们已取消您的订阅。"
+    }
+  },
+  {
+    "id": "base-30",
+    "category": "退款",
+    "zh": "很抱歉，这笔费用无法退还。",
+    "keywords": [
+      "费用不退",
+      "这笔费用不能退",
+      "该费用无法退还",
+      "这笔费用不退"
+    ],
+    "translations": {
+      "en": "We're sorry, but this charge is non-refundable.",
+      "ja": "申し訳ございませんが、こちらの料金は返金対象外です。",
+      "ko": "죄송하지만 이 요금은 환불 대상이 아닙니다.",
+      "es": "Lo sentimos, pero este cargo no es reembolsable.",
+      "pt": "Sentimos muito, mas essa cobrança não é reembolsável.",
+      "de": "Es tut uns leid, aber diese Gebühr ist nicht erstattungsfähig.",
+      "fr": "Nous sommes désolés, mais ces frais ne sont pas remboursables.",
+      "it": "Ci dispiace, ma questo addebito non è rimborsabile.",
+      "ru": "К сожалению, эта сумма не подлежит возврату."
+    },
+    "literal": {
+      "en": "很抱歉，这笔费用不可退还。",
+      "ja": "很抱歉，这笔费用不属于可退款范围。",
+      "ko": "很抱歉，这笔费用不属于可退款范围。",
+      "es": "很抱歉，这笔费用不可退还。",
+      "pt": "很抱歉，这笔费用不可退还。",
+      "de": "很抱歉，这笔费用不可退还。",
+      "fr": "很抱歉，这笔费用不可退还。",
+      "it": "很抱歉，这笔费用不可退还。",
+      "ru": "很遗憾，这笔款项无法退还。"
+    }
+  },
+  {
+    "id": "base-31",
+    "category": "退款",
+    "zh": "退款到账通常需要 3–5 个工作日。",
+    "keywords": [
+      "3-5个工作日退款到账",
+      "3到5个工作日退款到账",
+      "退款需要3-5个工作日",
+      "退款需要3到5个工作日"
+    ],
+    "translations": {
+      "en": "Refunds usually arrive within 3 to 5 business days.",
+      "ja": "返金の反映には通常3～5営業日かかります。",
+      "ko": "환불 금액은 보통 영업일 기준 3~5일 이내에 반영됩니다.",
+      "es": "El reembolso suele reflejarse en un plazo de 3 a 5 días hábiles.",
+      "pt": "O valor do reembolso costuma ser creditado em 3 a 5 dias úteis.",
+      "de": "Die Erstattung wird in der Regel innerhalb von 3 bis 5 Werktagen gutgeschrieben.",
+      "fr": "Le remboursement est généralement crédité sous 3 à 5 jours ouvrés.",
+      "it": "L’accredito del rimborso richiede solitamente da 3 a 5 giorni lavorativi.",
+      "ru": "Средства обычно зачисляются в течение 3–5 рабочих дней."
+    },
+    "literal": {
+      "en": "退款通常会在 3 到 5 个工作日内到账。",
+      "ja": "退款入账通常需要 3 到 5 个工作日。",
+      "ko": "退款通常会在 3 到 5 个工作日内到账。",
+      "es": "退款通常会在 3 到 5 个工作日内到账。",
+      "pt": "退款通常会在 3 到 5 个工作日内到账。",
+      "de": "退款通常会在 3 到 5 个工作日内到账。",
+      "fr": "退款通常会在 3 到 5 个工作日内到账。",
+      "it": "退款入账通常需要 3 到 5 个工作日。",
+      "ru": "退款通常会在 3 到 5 个工作日内到账。"
+    }
+  },
+  {
+    "id": "base-32",
+    "category": "订阅",
+    "zh": "订阅将在当前周期结束时自动续费。",
+    "keywords": [
+      "自动续费",
+      "到期会自动续费",
+      "到期续费",
+      "自动续订",
+      "开启自动续费"
+    ],
+    "translations": {
+      "en": "Your subscription will renew automatically at the end of the current billing period.",
+      "ja": "現在のご契約期間が終了すると、サブスクリプションは自動で更新されます。",
+      "ko": "현재 결제 주기가 끝나면 구독이 자동으로 갱신됩니다.",
+      "es": "Su suscripción se renovará automáticamente al final del período de facturación actual.",
+      "pt": "Sua assinatura será renovada automaticamente ao fim do ciclo de cobrança atual.",
+      "de": "Ihr Abonnement verlängert sich am Ende des aktuellen Abrechnungszeitraums automatisch.",
+      "fr": "Votre abonnement se renouvellera automatiquement à la fin de la période de facturation en cours.",
+      "it": "L’abbonamento si rinnoverà automaticamente alla fine del periodo di fatturazione in corso.",
+      "ru": "Ваша подписка продлится автоматически по окончании текущего расчётного периода."
+    },
+    "literal": {
+      "en": "您的订阅会在当前订阅周期结束时自动续订。",
+      "ja": "您的订阅会在当前订阅周期结束时自动续订。",
+      "ko": "您的订阅会在当前订阅周期结束时自动续订。",
+      "es": "您的订阅会在当前订阅周期结束时自动续订。",
+      "pt": "您的订阅会在当前订阅周期结束时自动续订。",
+      "de": "您的订阅会在当前订阅周期结束时自动续订。",
+      "fr": "您的订阅会在当前订阅周期结束时自动续订。",
+      "it": "您的订阅会在当前订阅周期结束时自动续订。",
+      "ru": "您的订阅会在当前订阅周期结束时自动续订。"
+    }
+  },
+  {
+    "id": "base-33",
+    "category": "订阅",
+    "zh": "我会为您核实这笔扣费。",
+    "keywords": [
+      "还在扣费",
+      "为什么扣费",
+      "又扣费",
+      "扣了钱",
+      "核实扣费",
+      "核查扣款"
+    ],
+    "translations": {
+      "en": "I'll look into the details of this charge for you.",
+      "ja": "こちらのご請求の詳細を確認いたします。",
+      "ko": "이 청구 내역을 확인해 드리겠습니다.",
+      "es": "Voy a revisar los detalles de este cargo.",
+      "pt": "Vou verificar os detalhes dessa cobrança para você.",
+      "de": "Ich prüfe die Einzelheiten dieser Abbuchung für Sie.",
+      "fr": "Je vais vérifier le détail de ce prélèvement pour vous.",
+      "it": "Verificherò i dettagli di questo addebito per lei.",
+      "ru": "Я проверю детали этого списания."
+    },
+    "literal": {
+      "en": "我会为您核实这笔扣费的详细信息。",
+      "ja": "我会查看这笔扣费的详细信息。",
+      "ko": "我会查看这笔扣费的详细信息。",
+      "es": "我会查看这笔扣费的详细信息。",
+      "pt": "我会为您核实这笔扣费的详细信息。",
+      "de": "我会为您核实这笔扣费的详细信息。",
+      "fr": "我会为您核实这笔扣费的详细信息。",
+      "it": "我会为您核实这笔扣费的详细信息。",
+      "ru": "我会查看这笔扣费的详细信息。"
+    }
+  },
+  {
+    "id": "base-34",
+    "category": "进度",
+    "zh": "我们会尽快处理。",
+    "keywords": [
+      "尽快",
+      "尽快处理",
+      "马上处理",
+      "加急"
+    ],
+    "translations": {
+      "en": "We'll address this as soon as we can.",
+      "ja": "できる限り早く対応いたします。",
+      "ko": "최대한 빠르게 처리하겠습니다.",
+      "es": "Nos ocuparemos de ello lo antes posible.",
+      "pt": "Vamos tratar disso assim que possível.",
+      "de": "Wir kümmern uns so bald wie möglich darum.",
+      "fr": "Nous traiterons cette demande dès que possible.",
+      "it": "Ce ne occuperemo il prima possibile.",
+      "ru": "Мы займёмся этим как можно скорее."
+    },
+    "literal": {
+      "en": "我们会尽快处理此事。",
+      "ja": "我们会尽快处理此事。",
+      "ko": "我们会尽快处理此事。",
+      "es": "我们会尽快处理此事。",
+      "pt": "我们会尽快处理此事。",
+      "de": "我们会尽快处理此事。",
+      "fr": "我们会尽快处理这项请求。",
+      "it": "我们会尽快处理此事。",
+      "ru": "我们会尽快处理此事。"
+    }
+  },
+  {
+    "id": "base-35",
+    "category": "进度",
+    "zh": "我已提交您的请求，请您稍等。",
+    "keywords": [
+      "已提交",
+      "已反馈",
+      "提交了",
+      "提交请求"
+    ],
+    "translations": {
+      "en": "I've submitted your request. Thank you for your patience.",
+      "ja": "ご依頼を提出いたしました。お待ちいただき、ありがとうございます。",
+      "ko": "고객님의 요청을 제출했습니다. 기다려 주셔서 감사합니다.",
+      "es": "Ya he enviado su solicitud. Gracias por su paciencia.",
+      "pt": "Já encaminhei sua solicitação. Agradeço pela paciência.",
+      "de": "Ich habe Ihre Anfrage eingereicht. Vielen Dank für Ihre Geduld.",
+      "fr": "J’ai transmis votre demande. Merci de votre patience.",
+      "it": "Ho inoltrato la sua richiesta. La ringrazio per la pazienza.",
+      "ru": "Ваш запрос передан. Благодарим вас за терпение."
+    },
+    "literal": {
+      "en": "我已提交您的请求。感谢您的耐心。",
+      "ja": "我已提交您的请求。感谢您的耐心。",
+      "ko": "我已提交您的请求。感谢您的耐心。",
+      "es": "我已经提交您的请求。感谢您的耐心。",
+      "pt": "我已提交您的请求。感谢您的耐心。",
+      "de": "我已提交您的请求。感谢您的耐心。",
+      "fr": "我已经转交您的请求。感谢您的耐心。",
+      "it": "我已经转交您的请求。感谢您的耐心。",
+      "ru": "您的请求已转交。感谢您的耐心。"
+    }
+  },
+  {
+    "id": "base-36",
+    "category": "进度",
+    "zh": "处理需要 1–3 个工作日。",
+    "keywords": [
+      "1-3个工作日",
+      "1到3个工作日",
+      "一到三个工作日"
+    ],
+    "translations": {
+      "en": "Processing takes 1 to 3 business days.",
+      "ja": "手続きには1～3営業日かかります。",
+      "ko": "처리에는 영업일 기준 1~3일이 걸립니다.",
+      "es": "El trámite tarda de 1 a 3 días hábiles.",
+      "pt": "O processamento leva de 1 a 3 dias úteis.",
+      "de": "Die Bearbeitung dauert 1 bis 3 Werktage.",
+      "fr": "Le traitement prend de 1 à 3 jours ouvrés.",
+      "it": "L’elaborazione richiede da 1 a 3 giorni lavorativi.",
+      "ru": "Обработка занимает от 1 до 3 рабочих дней."
+    },
+    "literal": {
+      "en": "处理需要 1 到 3 个工作日。",
+      "ja": "处理需要 1 到 3 个工作日。",
+      "ko": "处理需要 1 到 3 个工作日。",
+      "es": "处理需要 1 到 3 个工作日。",
+      "pt": "处理需要 1 到 3 个工作日。",
+      "de": "处理需要 1 到 3 个工作日。",
+      "fr": "处理需要 1 到 3 个工作日。",
+      "it": "处理需要 1 到 3 个工作日。",
+      "ru": "处理需要 1 到 3 个工作日。"
+    }
+  },
+  {
+    "id": "base-37",
+    "category": "进度",
+    "zh": "有进展时我会通知您。",
+    "keywords": [
+      "通知你",
+      "通知您",
+      "有结果",
+      "告诉你",
+      "有进展通知"
+    ],
+    "translations": {
+      "en": "I'll let you know as soon as there's an update.",
+      "ja": "進展があり次第、ご連絡いたします。",
+      "ko": "새로운 소식이 있는 대로 알려 드리겠습니다.",
+      "es": "Le avisaré en cuanto haya novedades.",
+      "pt": "Avisarei você assim que houver novidades.",
+      "de": "Ich informiere Sie, sobald es Neuigkeiten gibt.",
+      "fr": "Je vous tiendrai au courant dès qu’il y aura du nouveau.",
+      "it": "La informerò non appena ci saranno aggiornamenti.",
+      "ru": "Я сообщу вам, как только появятся новости."
+    },
+    "literal": {
+      "en": "一有新的进展，我就会通知您。",
+      "ja": "一有新的进展，我就会通知您。",
+      "ko": "一有新的进展，我就会通知您。",
+      "es": "一有新的进展，我就会通知您。",
+      "pt": "一有新的进展，我就会通知您。",
+      "de": "一有新的进展，我就会通知您。",
+      "fr": "一有新的进展，我就会通知您。",
+      "it": "一有新的进展，我就会通知您。",
+      "ru": "一有新的进展，我就会通知您。"
+    }
+  },
+  {
+    "id": "base-38",
+    "category": "升级",
+    "zh": "这个问题需要交由专门团队处理。",
+    "keywords": [
+      "升级",
+      "升级处理",
+      "转交专家",
+      "上报",
+      "二线"
+    ],
+    "translations": {
+      "en": "I'll refer this issue to our specialist team.",
+      "ja": "こちらの件は専門チームへ引き継ぎます。",
+      "ko": "이 문제를 전문 담당 팀에 전달하겠습니다.",
+      "es": "Trasladaré esta incidencia a nuestro equipo especializado.",
+      "pt": "Vou encaminhar esse caso à nossa equipe especializada.",
+      "de": "Ich leite Ihr Anliegen an unser zuständiges Fachteam weiter.",
+      "fr": "Je vais transmettre votre dossier à notre équipe spécialisée.",
+      "it": "Inoltrerò la segnalazione al nostro team specializzato.",
+      "ru": "Я передам этот вопрос нашей профильной команде."
+    },
+    "literal": {
+      "en": "我会将这个问题转交给专门团队。",
+      "ja": "我会将这个问题转交给专门团队。",
+      "ko": "我会将这个问题转交给专门团队。",
+      "es": "我会将这个问题转交给专门团队。",
+      "pt": "我会将这个问题转交给专门团队。",
+      "de": "我会将这个问题转交给专门团队。",
+      "fr": "我会把您的事项转交给我们的专门团队。",
+      "it": "我会将这个问题转交给专门团队。",
+      "ru": "我会将这个问题转交给专门团队。"
+    }
+  },
+  {
+    "id": "base-39",
+    "category": "升级",
+    "zh": "我为您转接相关同事。",
+    "keywords": [
+      "转接",
+      "转给",
+      "转人工",
+      "换人"
+    ],
+    "translations": {
+      "en": "I'll connect you with a colleague who can help.",
+      "ja": "対応できる担当者におつなぎいたします。",
+      "ko": "도움을 드릴 수 있는 담당자에게 연결해 드리겠습니다.",
+      "es": "Le comunicaré con un compañero que pueda ayudarle.",
+      "pt": "Vou transferir o atendimento para um colega que possa ajudar.",
+      "de": "Ich verbinde Sie mit einer zuständigen Person aus unserem Team, die Ihnen weiterhelfen kann.",
+      "fr": "Je vais vous mettre en relation avec un membre de notre équipe qui pourra vous aider.",
+      "it": "La metterò in contatto con un collega che potrà aiutarla.",
+      "ru": "Я соединю вас с коллегой, который сможет помочь."
+    },
+    "literal": {
+      "en": "我会为您转接能够提供帮助的同事。",
+      "ja": "我会为您转接能够提供帮助的同事。",
+      "ko": "我会为您转接能够提供帮助的同事。",
+      "es": "我会为您转接能够提供帮助的同事。",
+      "pt": "我会为您转接能够提供帮助的同事。",
+      "de": "我会为您转接能够提供帮助的同事。",
+      "fr": "我会为您转接能够提供帮助的同事。",
+      "it": "我会为您转接能够提供帮助的同事。",
+      "ru": "我会为您转接能够提供帮助的同事。"
+    }
+  },
+  {
+    "id": "base-40",
+    "category": "技术",
+    "zh": "这是我们系统的问题。",
+    "keywords": [
+      "系统问题",
+      "系统故障",
+      "系统异常",
+      "我们系统的问题"
+    ],
+    "translations": {
+      "en": "This is an issue with our system.",
+      "ja": "弊社のシステムに不具合が発生しております。",
+      "ko": "저희 시스템에 문제가 발생했습니다.",
+      "es": "Se trata de un problema en nuestro sistema.",
+      "pt": "Trata-se de um problema no nosso sistema.",
+      "de": "Es liegt eine Störung in unserem System vor.",
+      "fr": "Il s’agit d’un problème dans notre système.",
+      "it": "Si tratta di un problema del nostro sistema.",
+      "ru": "Проблема возникла в нашей системе."
+    },
+    "literal": {
+      "en": "这是我们系统的问题。",
+      "ja": "我们的系统发生了故障。",
+      "ko": "这是我们系统的问题。",
+      "es": "这是我们系统的问题。",
+      "pt": "这是我们系统的问题。",
+      "de": "我们的系统出现了故障。",
+      "fr": "这是我们系统的问题。",
+      "it": "这是我们系统的问题。",
+      "ru": "这是我们系统的问题。"
+    }
+  },
+  {
+    "id": "base-41",
+    "category": "技术",
+    "zh": "您可以尝试清除缓存。",
+    "keywords": [
+      "清除缓存",
+      "清缓存",
+      "删除缓存"
+    ],
+    "translations": {
+      "en": "Could you try clearing the cache, please?",
+      "ja": "キャッシュの削除をお試しいただけますか。",
+      "ko": "캐시를 삭제해 보시겠습니까?",
+      "es": "¿Podría probar a borrar la caché, por favor?",
+      "pt": "Poderia tentar limpar o cache, por favor?",
+      "de": "Könnten Sie bitte versuchen, den Cache zu leeren?",
+      "fr": "Pourriez-vous essayer de vider le cache, s’il vous plaît ?",
+      "it": "Potrebbe provare a svuotare la cache, per favore?",
+      "ru": "Не могли бы вы попробовать очистить кеш?"
+    },
+    "literal": {
+      "en": "能否请您尝试清除缓存？",
+      "ja": "能否请您尝试清除缓存？",
+      "ko": "能否请您尝试清除缓存？",
+      "es": "能否请您尝试清除缓存？",
+      "pt": "能否请您尝试清除缓存？",
+      "de": "能否请您尝试清除缓存？",
+      "fr": "能否请您尝试清除缓存？",
+      "it": "能否请您尝试清除缓存？",
+      "ru": "能否请您尝试清除缓存？"
+    }
+  },
+  {
+    "id": "base-42",
+    "category": "收尾",
+    "zh": "还有什么我能为您做的吗？",
+    "keywords": [
+      "还有其他问题",
+      "还有问题",
+      "还有什么",
+      "还有别的"
+    ],
+    "translations": {
+      "en": "Is there anything else I can help you with?",
+      "ja": "ほかにお手伝いできることはございますか。",
+      "ko": "더 도와드릴 일이 있을까요?",
+      "es": "¿Hay algo más en lo que pueda ayudarle?",
+      "pt": "Posso ajudar você em mais alguma coisa?",
+      "de": "Kann ich Ihnen sonst noch behilflich sein?",
+      "fr": "Puis-je vous aider sur un autre point ?",
+      "it": "Posso aiutarla in qualcos’altro?",
+      "ru": "Могу ли я помочь вам чем-нибудь ещё?"
+    },
+    "literal": {
+      "en": "请问还有什么我可以帮您的吗？",
+      "ja": "请问还有什么我可以帮您的吗？",
+      "ko": "请问还有什么我可以帮您的吗？",
+      "es": "请问还有什么我可以帮您的吗？",
+      "pt": "请问还有什么我可以帮您的吗？",
+      "de": "请问还有什么我可以帮您的吗？",
+      "fr": "请问还有什么我可以帮您的吗？",
+      "it": "请问还有什么我可以帮您的吗？",
+      "ru": "请问还有什么我可以帮您的吗？"
+    }
+  },
+  {
+    "id": "base-43",
+    "category": "收尾",
+    "zh": "祝您今天愉快。",
+    "keywords": [
+      "祝你",
+      "愉快",
+      "好的一天",
+      "再见",
+      "祝你生活愉快"
+    ],
+    "translations": {
+      "en": "Have a lovely day.",
+      "ja": "どうぞよい一日をお過ごしください。",
+      "ko": "좋은 하루 보내시기 바랍니다.",
+      "es": "Que tenga un buen día.",
+      "pt": "Tenha um ótimo dia.",
+      "de": "Ich wünsche Ihnen einen schönen Tag.",
+      "fr": "Je vous souhaite une excellente journée.",
+      "it": "Le auguro una buona giornata.",
+      "ru": "Желаю вам хорошего дня."
+    },
+    "literal": {
+      "en": "祝您度过愉快的一天。",
+      "ja": "祝您度过愉快的一天。",
+      "ko": "祝您度过愉快的一天。",
+      "es": "祝您度过愉快的一天。",
+      "pt": "祝您度过愉快的一天。",
+      "de": "祝您度过愉快的一天。",
+      "fr": "祝您度过愉快的一天。",
+      "it": "祝您度过愉快的一天。",
+      "ru": "祝您度过愉快的一天。"
+    }
+  },
+  {
+    "id": "base-44",
+    "category": "收尾",
+    "zh": "感谢您的耐心。",
+    "keywords": [
+      "感谢耐心",
+      "谢谢等待",
+      "耐心",
+      "谢谢您等待"
+    ],
+    "translations": {
+      "en": "Thank you for your patience.",
+      "ja": "お待ちいただき、ありがとうございます。",
+      "ko": "기다려 주셔서 감사합니다.",
+      "es": "Gracias por su paciencia.",
+      "pt": "Agradecemos a sua paciência.",
+      "de": "Vielen Dank für Ihre Geduld.",
+      "fr": "Merci de votre patience.",
+      "it": "La ringraziamo per la pazienza.",
+      "ru": "Благодарим вас за терпение."
+    },
+    "literal": {
+      "en": "感谢您的耐心等待。",
+      "ja": "感谢您的等待。",
+      "ko": "感谢您的等待。",
+      "es": "感谢您的耐心等待。",
+      "pt": "感谢您的耐心等待。",
+      "de": "感谢您的耐心等待。",
+      "fr": "感谢您的耐心等待。",
+      "it": "感谢您的耐心等待。",
+      "ru": "感谢您的耐心等待。"
+    }
+  },
+  {
+    "id": "base-45",
+    "category": "退款",
+    "zh": "我们已为您发起退款。",
+    "keywords": [
+      "已发起退款",
+      "已经退款",
+      "已经为您退款",
+      "已退款",
+      "已退了",
+      "退款已发出"
+    ],
+    "translations": {
+      "en": "We've issued your refund.",
+      "ja": "返金のお手続きをいたしました。",
+      "ko": "환불을 진행해 드렸습니다.",
+      "es": "Ya hemos emitido su reembolso.",
+      "pt": "Já emitimos o seu reembolso.",
+      "de": "Wir haben Ihre Erstattung veranlasst.",
+      "fr": "Nous avons effectué le remboursement.",
+      "it": "Abbiamo disposto il suo rimborso.",
+      "ru": "Мы оформили возврат средств."
+    },
+    "literal": {
+      "en": "我们已经为您办理了退款。",
+      "ja": "我们已经为您办理了退款。",
+      "ko": "我们已经为您办理了退款。",
+      "es": "我们已经为您办理了退款。",
+      "pt": "我们已经为您办理了退款。",
+      "de": "我们已经为您办理了退款。",
+      "fr": "我们已经为您办理了退款。",
+      "it": "我们已经为您办理了退款。",
+      "ru": "我们已经为您办理了退款。"
+    }
+  },
+  {
+    "id": "base-46",
+    "category": "退款",
+    "zh": "这笔订单符合退款条件。",
+    "keywords": [
+      "可以退款",
+      "能退款",
+      "符合退款条件",
+      "支持退款",
+      "可以退"
+    ],
+    "translations": {
+      "en": "This order is eligible for a refund.",
+      "ja": "こちらのご注文は返金の対象です。",
+      "ko": "이 주문은 환불 대상입니다.",
+      "es": "Este pedido cumple las condiciones para un reembolso.",
+      "pt": "Este pedido atende aos critérios para reembolso.",
+      "de": "Für diese Bestellung ist eine Erstattung möglich.",
+      "fr": "Cette commande est éligible à un remboursement.",
+      "it": "Questo ordine è idoneo al rimborso.",
+      "ru": "По этому заказу возможен возврат средств."
+    },
+    "literal": {
+      "en": "这笔订单符合退款资格。",
+      "ja": "这笔订单符合退款资格。",
+      "ko": "这笔订单符合退款资格。",
+      "es": "这笔订单符合退款资格。",
+      "pt": "这笔订单符合退款资格。",
+      "de": "这笔订单可以办理退款。",
+      "fr": "这笔订单符合退款资格。",
+      "it": "这笔订单符合退款资格。",
+      "ru": "这笔订单可以办理退款。"
+    }
+  },
+  {
+    "id": "base-47",
+    "category": "订阅",
+    "zh": "订阅到期后不会自动续费。",
+    "keywords": [
+      "不会续费",
+      "不会自动续费",
+      "到期不续费",
+      "到期不会自动续费"
+    ],
+    "translations": {
+      "en": "Your subscription won't renew automatically at the end of the current period.",
+      "ja": "現在のご契約期間が終了しても、サブスクリプションは自動更新されません。",
+      "ko": "현재 이용 기간이 끝나면 구독이 자동으로 갱신되지 않습니다.",
+      "es": "Su suscripción no se renovará automáticamente al finalizar el período actual.",
+      "pt": "Sua assinatura não será renovada automaticamente ao fim do período atual.",
+      "de": "Ihr Abonnement verlängert sich am Ende des aktuellen Zeitraums nicht automatisch.",
+      "fr": "Votre abonnement ne se renouvellera pas automatiquement à la fin de la période en cours.",
+      "it": "L’abbonamento non si rinnoverà automaticamente alla fine del periodo in corso.",
+      "ru": "Ваша подписка не продлится автоматически по окончании текущего периода."
+    },
+    "literal": {
+      "en": "当前周期结束后，您的订阅不会自动续订。",
+      "ja": "当前周期结束后，您的订阅不会自动续订。",
+      "ko": "当前周期结束后，您的订阅不会自动续订。",
+      "es": "当前周期结束后，您的订阅不会自动续订。",
+      "pt": "当前周期结束后，您的订阅不会自动续订。",
+      "de": "当前周期结束后，您的订阅不会自动续订。",
+      "fr": "当前周期结束后，您的订阅不会自动续订。",
+      "it": "当前周期结束后，您的订阅不会自动续订。",
+      "ru": "当前周期结束后，您的订阅不会自动续订。"
+    }
+  },
+  {
+    "id": "base-48",
+    "category": "退款",
+    "zh": "我们已收到您的退款申请。",
+    "keywords": [
+      "已收到退款申请",
+      "退款申请已受理",
+      "收到退款申请",
+      "受理退款申请"
+    ],
+    "translations": {
+      "en": "We've received your refund request.",
+      "ja": "返金申請を受け付けました。",
+      "ko": "고객님의 환불 신청을 접수했습니다.",
+      "es": "Hemos recibido su solicitud de reembolso.",
+      "pt": "Recebemos sua solicitação de reembolso.",
+      "de": "Wir haben Ihren Erstattungsantrag erhalten.",
+      "fr": "Nous avons bien reçu votre demande de remboursement.",
+      "it": "Abbiamo ricevuto la sua richiesta di rimborso.",
+      "ru": "Мы получили вашу заявку на возврат средств."
+    },
+    "literal": {
+      "en": "我们已经收到您的退款申请。",
+      "ja": "我们已经受理您的退款申请。",
+      "ko": "我们已经受理您的退款申请。",
+      "es": "我们已经收到您的退款申请。",
+      "pt": "我们已经收到您的退款申请。",
+      "de": "我们已经收到您的退款申请。",
+      "fr": "我们已经收到您的退款申请。",
+      "it": "我们已经收到您的退款申请。",
+      "ru": "我们已经收到您的退款申请。"
+    }
+  },
+  {
+    "id": "base-49",
+    "category": "退款",
+    "zh": "您的退款申请正在审核中。",
+    "keywords": [
+      "退款审核中",
+      "退款审核",
+      "正在审核退款",
+      "退款申请审核中",
+      "退款申请正在审核"
+    ],
+    "translations": {
+      "en": "Your refund request is under review.",
+      "ja": "返金申請は現在審査中です。",
+      "ko": "고객님의 환불 신청을 검토하고 있습니다.",
+      "es": "Su solicitud de reembolso está en revisión.",
+      "pt": "Sua solicitação de reembolso está em análise.",
+      "de": "Ihr Erstattungsantrag wird derzeit geprüft.",
+      "fr": "Votre demande de remboursement est en cours d’examen.",
+      "it": "La sua richiesta di rimborso è in fase di verifica.",
+      "ru": "Ваша заявка на возврат средств находится на рассмотрении."
+    },
+    "literal": {
+      "en": "您的退款申请正在接受审核。",
+      "ja": "您的退款申请正在接受审核。",
+      "ko": "我们正在审核您的退款申请。",
+      "es": "您的退款申请正在接受审核。",
+      "pt": "您的退款申请正在接受审核。",
+      "de": "您的退款申请正在接受审核。",
+      "fr": "您的退款申请正在接受审核。",
+      "it": "您的退款申请正在接受审核。",
+      "ru": "您的退款申请正在接受审核。"
+    }
+  },
+  {
+    "id": "base-50",
+    "category": "退款",
+    "zh": "您的退款申请已获批准。",
+    "keywords": [
+      "退款审核通过",
+      "退款已批准",
+      "退款批准",
+      "退款申请通过",
+      "同意退款",
+      "已获批准"
+    ],
+    "translations": {
+      "en": "Your refund request has been approved.",
+      "ja": "返金申請が承認されました。",
+      "ko": "고객님의 환불 신청이 승인되었습니다.",
+      "es": "Su solicitud de reembolso ha sido aprobada.",
+      "pt": "Sua solicitação de reembolso foi aprovada.",
+      "de": "Ihr Erstattungsantrag wurde genehmigt.",
+      "fr": "Votre demande de remboursement a été approuvée.",
+      "it": "La sua richiesta di rimborso è stata approvata.",
+      "ru": "Ваша заявка на возврат средств одобрена."
+    },
+    "literal": {
+      "en": "您的退款申请已通过审核。",
+      "ja": "您的退款申请已通过审核。",
+      "ko": "您的退款申请已通过审核。",
+      "es": "您的退款申请已通过审核。",
+      "pt": "您的退款申请已通过审核。",
+      "de": "您的退款申请已通过审核。",
+      "fr": "您的退款申请已通过审核。",
+      "it": "您的退款申请已通过审核。",
+      "ru": "您的退款申请已通过审核。"
+    }
+  },
+  {
+    "id": "base-51",
+    "category": "退款",
+    "zh": "很抱歉，您的退款申请未获批准。",
+    "keywords": [
+      "退款审核未通过",
+      "退款申请被拒",
+      "退款未批准",
+      "审核不通过",
+      "退款申请未通过"
+    ],
+    "translations": {
+      "en": "We're sorry, but your refund request wasn't approved.",
+      "ja": "申し訳ございませんが、返金申請は承認されませんでした。",
+      "ko": "죄송하지만 고객님의 환불 신청이 승인되지 않았습니다.",
+      "es": "Lo sentimos, pero su solicitud de reembolso no ha sido aprobada.",
+      "pt": "Sentimos muito, mas sua solicitação de reembolso não foi aprovada.",
+      "de": "Es tut uns leid, aber Ihr Erstattungsantrag wurde nicht genehmigt.",
+      "fr": "Nous sommes désolés, mais votre demande de remboursement n’a pas été approuvée.",
+      "it": "Ci dispiace, ma la sua richiesta di rimborso non è stata approvata.",
+      "ru": "К сожалению, ваша заявка на возврат средств не была одобрена."
+    },
+    "literal": {
+      "en": "很抱歉，您的退款申请没有通过审核。",
+      "ja": "很抱歉，您的退款申请没有通过审核。",
+      "ko": "很抱歉，您的退款申请没有通过审核。",
+      "es": "很抱歉，您的退款申请没有通过审核。",
+      "pt": "很抱歉，您的退款申请没有通过审核。",
+      "de": "很抱歉，您的退款申请没有通过审核。",
+      "fr": "很抱歉，您的退款申请没有通过审核。",
+      "it": "很抱歉，您的退款申请没有通过审核。",
+      "ru": "很抱歉，您的退款申请没有通过审核。"
+    }
+  },
+  {
+    "id": "base-52",
+    "category": "退款",
+    "zh": "您的退款正在处理中。",
+    "keywords": [
+      "退款处理中",
+      "正在处理退款",
+      "退款处理进度",
+      "退款还在处理",
+      "正在退款"
+    ],
+    "translations": {
+      "en": "Your refund is being processed.",
+      "ja": "現在、返金手続きを進めております。",
+      "ko": "고객님의 환불이 처리 중입니다.",
+      "es": "Su reembolso se está tramitando.",
+      "pt": "Seu reembolso está sendo processado.",
+      "de": "Ihre Erstattung wird derzeit bearbeitet.",
+      "fr": "Votre remboursement est en cours de traitement.",
+      "it": "Il suo rimborso è in fase di elaborazione.",
+      "ru": "Ваш возврат средств обрабатывается."
+    },
+    "literal": {
+      "en": "您的退款正在办理中。",
+      "ja": "我们正在办理退款手续。",
+      "ko": "您的退款正在办理中。",
+      "es": "您的退款正在办理中。",
+      "pt": "您的退款正在办理中。",
+      "de": "您的退款正在办理中。",
+      "fr": "您的退款正在办理中。",
+      "it": "您的退款正在办理中。",
+      "ru": "您的退款正在办理中。"
+    }
+  },
+  {
+    "id": "base-53",
+    "category": "退款",
+    "zh": "退款将退回至原付款方式。",
+    "keywords": [
+      "原路退回",
+      "原付款方式",
+      "退到原账户",
+      "退款去向",
+      "退回原支付方式"
+    ],
+    "translations": {
+      "en": "We'll issue the refund to your original payment method.",
+      "ja": "返金は、お支払い時と同じ決済方法にて行われます。",
+      "ko": "환불 금액은 기존 결제 수단으로 반환됩니다.",
+      "es": "El reembolso se abonará en el medio de pago original.",
+      "pt": "O reembolso será creditado na forma de pagamento original.",
+      "de": "Die Erstattung erfolgt über Ihre ursprüngliche Zahlungsmethode.",
+      "fr": "Le remboursement sera effectué sur le moyen de paiement utilisé à l’origine.",
+      "it": "Il rimborso verrà accreditato sul metodo di pagamento originale.",
+      "ru": "Средства будут возвращены тем же способом, которым был произведён платёж."
+    },
+    "literal": {
+      "en": "我们会将退款发回您原来使用的付款方式。",
+      "ja": "退款款项将退回到您原来使用的付款方式。",
+      "ko": "退款款项将退回到您原来使用的付款方式。",
+      "es": "退款款项将退回到您原来使用的付款方式。",
+      "pt": "退款款项将退回到您原来使用的付款方式。",
+      "de": "退款款项将退回到您原来使用的付款方式。",
+      "fr": "退款款项将退回到您原来使用的付款方式。",
+      "it": "退款款项将退回到您原来使用的付款方式。",
+      "ru": "退款款项将退回到您原来使用的付款方式。"
+    }
+  },
+  {
+    "id": "base-54",
+    "category": "退款",
+    "zh": "退款已到账，请查收。",
+    "keywords": [
+      "退款已到账",
+      "已到账",
+      "已入账",
+      "退款到账了",
+      "已收到退款"
+    ],
+    "translations": {
+      "en": "Your refund has been credited. Please check your transaction history.",
+      "ja": "返金額が反映されました。取引履歴をご確認ください。",
+      "ko": "환불 금액이 반영되었습니다. 거래 내역을 확인해 주시기 바랍니다.",
+      "es": "El reembolso ya se ha abonado. Por favor, revise su historial de transacciones.",
+      "pt": "O reembolso foi creditado. Por favor, confira seu histórico de transações.",
+      "de": "Die Erstattung wurde gutgeschrieben. Bitte prüfen Sie Ihre Transaktionsübersicht.",
+      "fr": "Votre remboursement a été crédité. Veuillez consulter l’historique de vos transactions.",
+      "it": "Il rimborso è stato accreditato. La invitiamo a consultare lo storico delle operazioni.",
+      "ru": "Возврат уже зачислен. Пожалуйста, проверьте историю операций."
+    },
+    "literal": {
+      "en": "退款已入账，请查看交易记录。",
+      "ja": "退款金额已入账，请查看交易记录。",
+      "ko": "退款金额已入账，请查看交易记录。",
+      "es": "退款已入账，请查看交易记录。",
+      "pt": "退款已入账，请查看交易记录。",
+      "de": "退款已入账，请查看交易记录。",
+      "fr": "退款已入账，请查看交易记录。",
+      "it": "退款已入账，请查看交易记录。",
+      "ru": "退款已入账，请查看交易记录。"
+    }
+  },
+  {
+    "id": "base-55",
+    "category": "退款",
+    "zh": "如果您还未收到退款，请联系我们核查。",
+    "keywords": [
+      "退款未到账",
+      "退款没到账",
+      "还没收到退款",
+      "没收到退款",
+      "未收到退款",
+      "还未到账",
+      "没到账",
+      "未到账",
+      "还没到账"
+    ],
+    "translations": {
+      "en": "If you haven't received the refund yet, please contact us so we can look into it.",
+      "ja": "返金がまだ反映されていない場合は、確認いたしますのでお問い合わせください。",
+      "ko": "아직 환불 금액이 반영되지 않았다면 문의해 주세요. 확인해 드리겠습니다.",
+      "es": "Si aún no ha recibido el reembolso, póngase en contacto con nosotros para que podamos revisarlo.",
+      "pt": "Se você ainda não recebeu o reembolso, entre em contato conosco para que possamos verificar.",
+      "de": "Falls Sie die Erstattung noch nicht erhalten haben, kontaktieren Sie uns bitte, damit wir den Vorgang prüfen können.",
+      "fr": "Si vous n’avez pas encore reçu le remboursement, veuillez nous contacter afin que nous puissions vérifier la situation.",
+      "it": "Se non ha ancora ricevuto il rimborso, ci contatti affinché possiamo verificare la situazione.",
+      "ru": "Если вы ещё не получили возврат, пожалуйста, свяжитесь с нами, чтобы мы могли проверить операцию."
+    },
+    "literal": {
+      "en": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "ja": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "ko": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "es": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "pt": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "de": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "fr": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "it": "如果您还没有收到退款，请联系我们，我们会核查。",
+      "ru": "如果您还没有收到退款，请联系我们，我们会核查。"
+    }
+  },
+  {
+    "id": "base-56",
+    "category": "退款",
+    "zh": "我们已为您退还部分费用。",
+    "keywords": [
+      "部分退款",
+      "已部分退款",
+      "退了一部分",
+      "退还部分",
+      "部分费用已退"
+    ],
+    "translations": {
+      "en": "We've issued a partial refund.",
+      "ja": "一部返金のお手続きをいたしました。",
+      "ko": "일부 금액을 환불해 드렸습니다.",
+      "es": "Hemos emitido un reembolso parcial.",
+      "pt": "Emitimos um reembolso parcial.",
+      "de": "Wir haben eine Teilerstattung veranlasst.",
+      "fr": "Nous avons effectué un remboursement partiel.",
+      "it": "Abbiamo disposto un rimborso parziale.",
+      "ru": "Мы оформили частичный возврат средств."
+    },
+    "literal": {
+      "en": "我们已经为您办理了部分退款。",
+      "ja": "我们已经办理了部分退款手续。",
+      "ko": "我们已经为您办理了部分退款。",
+      "es": "我们已经为您办理了部分退款。",
+      "pt": "我们已经为您办理了部分退款。",
+      "de": "我们已经为您办理了部分退款。",
+      "fr": "我们已经为您办理了部分退款。",
+      "it": "我们已经为您办理了部分退款。",
+      "ru": "我们已经为您办理了部分退款。"
+    }
+  },
+  {
+    "id": "base-57",
+    "category": "退款",
+    "zh": "请提供订单号，以便我们查询退款进度。",
+    "keywords": [
+      "查询退款进度",
+      "退款进度怎么查",
+      "查退款需要订单号",
+      "退款订单号",
+      "退款到哪了"
+    ],
+    "translations": {
+      "en": "Could you share your order number so we can check the status of your refund?",
+      "ja": "返金状況を確認するため、注文番号をお知らせいただけますか。",
+      "ko": "환불 상태를 확인할 수 있도록 주문 번호를 알려 주시겠습니까?",
+      "es": "¿Podría facilitarnos su número de pedido para que podamos consultar el estado de su reembolso?",
+      "pt": "Poderia nos informar o número do pedido para verificarmos o status do seu reembolso?",
+      "de": "Könnten Sie uns bitte Ihre Bestellnummer nennen, damit wir den Status Ihrer Erstattung prüfen können?",
+      "fr": "Pourriez-vous nous communiquer votre numéro de commande afin que nous puissions vérifier l’état de votre remboursement ?",
+      "it": "Potrebbe comunicarci il numero dell’ordine, così potremo verificare lo stato del rimborso?",
+      "ru": "Не могли бы вы сообщить номер заказа, чтобы мы могли проверить статус возврата?"
+    },
+    "literal": {
+      "en": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "ja": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "ko": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "es": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "pt": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "de": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "fr": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "it": "能否请您提供订单号，以便我们查询您的退款状态？",
+      "ru": "能否请您提供订单号，以便我们查询您的退款状态？"
+    }
+  },
+  {
+    "id": "base-58",
+    "category": "退款",
+    "zh": "我们会核对是否可以为您办理退款。",
+    "keywords": [
+      "能不能退款",
+      "可以退款吗",
+      "是否可以退款",
+      "是否符合退款条件",
+      "如何判断退款资格",
+      "能否退款"
+    ],
+    "translations": {
+      "en": "We'll check whether your order is eligible for a refund.",
+      "ja": "ご注文が返金対象かどうかを確認いたします。",
+      "ko": "해당 주문이 환불 대상인지 확인해 드리겠습니다.",
+      "es": "Comprobaremos si su pedido cumple las condiciones para un reembolso.",
+      "pt": "Vamos verificar se o seu pedido atende aos critérios para reembolso.",
+      "de": "Wir prüfen, ob Ihre Bestellung für eine Erstattung infrage kommt.",
+      "fr": "Nous allons vérifier si votre commande est éligible à un remboursement.",
+      "it": "Verificheremo se il suo ordine è idoneo al rimborso.",
+      "ru": "Мы проверим, возможен ли возврат средств по вашему заказу."
+    },
+    "literal": {
+      "en": "我们会核查这笔订单是否符合退款条件。",
+      "ja": "我们会核查这笔订单是否符合退款条件。",
+      "ko": "我们会核查这笔订单是否符合退款条件。",
+      "es": "我们会核查这笔订单是否符合退款条件。",
+      "pt": "我们会核查这笔订单是否符合退款条件。",
+      "de": "我们会核查这笔订单是否符合退款条件。",
+      "fr": "我们会核查这笔订单是否符合退款条件。",
+      "it": "我们会核查这笔订单是否符合退款条件。",
+      "ru": "我们会核查这笔订单是否符合退款条件。"
+    }
+  },
+  {
+    "id": "base-59",
+    "category": "退款",
+    "zh": "这笔退款未能完成，我们会核查原因。",
+    "keywords": [
+      "退款失败",
+      "退款未成功",
+      "退款未完成",
+      "退款原路失败",
+      "退款操作失败"
+    ],
+    "translations": {
+      "en": "The refund couldn't be completed. We'll look into the reason.",
+      "ja": "返金手続きが完了しませんでした。原因を確認いたします。",
+      "ko": "환불이 완료되지 않았습니다. 원인을 확인하겠습니다.",
+      "es": "El reembolso no pudo completarse. Revisaremos el motivo.",
+      "pt": "Não foi possível concluir o reembolso. Vamos verificar o motivo.",
+      "de": "Die Erstattung konnte nicht abgeschlossen werden. Wir prüfen die Ursache.",
+      "fr": "Le remboursement n’a pas pu être effectué. Nous allons en vérifier la cause.",
+      "it": "Non è stato possibile completare il rimborso. Ne verificheremo il motivo.",
+      "ru": "Не удалось завершить возврат средств. Мы выясним причину."
+    },
+    "literal": {
+      "en": "这笔退款未能完成。我们会调查原因。",
+      "ja": "这笔退款未能完成。我们会调查原因。",
+      "ko": "这笔退款未能完成。我们会调查原因。",
+      "es": "这笔退款未能完成。我们会调查原因。",
+      "pt": "这笔退款未能完成。我们会调查原因。",
+      "de": "这笔退款未能完成。我们会调查原因。",
+      "fr": "这笔退款未能完成。我们会调查原因。",
+      "it": "这笔退款未能完成。我们会调查原因。",
+      "ru": "这笔退款未能完成。我们会调查原因。"
+    }
+  },
+  {
+    "id": "base-60",
+    "category": "订阅",
+    "zh": "我们已为您关闭自动续费。",
+    "keywords": [
+      "关闭自动续费",
+      "已关闭自动续费",
+      "自动续费已关闭",
+      "已关闭续订",
+      "关闭续费成功"
+    ],
+    "translations": {
+      "en": "We've turned off automatic renewal for your subscription.",
+      "ja": "自動更新を停止いたしました。",
+      "ko": "구독의 자동 갱신을 해제해 드렸습니다.",
+      "es": "Hemos desactivado la renovación automática de su suscripción.",
+      "pt": "Desativamos a renovação automática da sua assinatura.",
+      "de": "Wir haben die automatische Verlängerung Ihres Abonnements deaktiviert.",
+      "fr": "Nous avons désactivé le renouvellement automatique de votre abonnement.",
+      "it": "Abbiamo disattivato il rinnovo automatico del suo abbonamento.",
+      "ru": "Мы отключили автоматическое продление вашей подписки."
+    },
+    "literal": {
+      "en": "我们已经为您停用了自动续订。",
+      "ja": "自动续订已停止。",
+      "ko": "我们已经为您停用了自动续订。",
+      "es": "我们已经为您停用了自动续订。",
+      "pt": "我们已经为您停用了自动续订。",
+      "de": "我们已经为您停用了自动续订。",
+      "fr": "我们已经为您停用了自动续订。",
+      "it": "我们已经为您停用了自动续订。",
+      "ru": "我们已经为您停用了自动续订。"
+    }
+  },
+  {
+    "id": "base-61",
+    "category": "订阅",
+    "zh": "取消订阅后，您仍可使用服务至当前周期结束。",
+    "keywords": [
+      "取消后还能用",
+      "取消订阅权益",
+      "取消后有效期",
+      "取消后使用到期",
+      "退订后还能用"
+    ],
+    "translations": {
+      "en": "After canceling, you'll still have access to the service until the end of your current subscription period.",
+      "ja": "解約後も、現在のご契約期間が終了するまではサービスをご利用いただけます。",
+      "ko": "구독을 해지하신 후에도 현재 이용 기간이 끝날 때까지 서비스를 이용하실 수 있습니다.",
+      "es": "Después de cancelar, podrá seguir utilizando el servicio hasta el final del período de suscripción actual.",
+      "pt": "Após o cancelamento, você poderá continuar usando o serviço até o fim do período atual da assinatura.",
+      "de": "Nach der Kündigung können Sie den Dienst bis zum Ende des aktuellen Abonnementzeitraums weiter nutzen.",
+      "fr": "Après la résiliation, vous pourrez continuer à utiliser le service jusqu’à la fin de la période d’abonnement en cours.",
+      "it": "Dopo l’annullamento potrà continuare a utilizzare il servizio fino alla fine del periodo di abbonamento in corso.",
+      "ru": "После отмены подписки вы сможете пользоваться услугой до конца текущего периода подписки."
+    },
+    "literal": {
+      "en": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "ja": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "ko": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "es": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "pt": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "de": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "fr": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "it": "取消订阅后，您仍可使用服务，直到当前周期结束。",
+      "ru": "取消订阅后，您仍可使用服务，直到当前周期结束。"
+    }
+  },
+  {
+    "id": "base-62",
+    "category": "订阅",
+    "zh": "您的订阅目前仍然有效。",
+    "keywords": [
+      "订阅有效",
+      "订阅还有效",
+      "订阅状态有效",
+      "订阅还在",
+      "会员仍有效"
+    ],
+    "translations": {
+      "en": "Your subscription is currently active.",
+      "ja": "現在もサブスクリプションは有効です。",
+      "ko": "현재 고객님의 구독은 유효합니다.",
+      "es": "Su suscripción está activa actualmente.",
+      "pt": "Sua assinatura está ativa no momento.",
+      "de": "Ihr Abonnement ist derzeit aktiv.",
+      "fr": "Votre abonnement est actuellement actif.",
+      "it": "Il suo abbonamento è attualmente attivo.",
+      "ru": "Ваша подписка сейчас активна."
+    },
+    "literal": {
+      "en": "您的订阅目前处于有效状态。",
+      "ja": "您的订阅目前仍然有效。",
+      "ko": "您的订阅目前处于有效状态。",
+      "es": "您的订阅目前处于有效状态。",
+      "pt": "您的订阅目前处于有效状态。",
+      "de": "您的订阅目前处于有效状态。",
+      "fr": "您的订阅目前处于有效状态。",
+      "it": "您的订阅目前处于有效状态。",
+      "ru": "您的订阅目前处于有效状态。"
+    }
+  },
+  {
+    "id": "base-63",
+    "category": "订阅",
+    "zh": "您的订阅已到期。",
+    "keywords": [
+      "订阅已到期",
+      "订阅已过期",
+      "会员到期",
+      "订阅过期",
+      "订阅到期了"
+    ],
+    "translations": {
+      "en": "Your subscription has expired.",
+      "ja": "サブスクリプションの有効期間が終了しました。",
+      "ko": "고객님의 구독 기간이 만료되었습니다.",
+      "es": "Su suscripción ha vencido.",
+      "pt": "Sua assinatura expirou.",
+      "de": "Ihr Abonnement ist abgelaufen.",
+      "fr": "Votre abonnement a expiré.",
+      "it": "Il suo abbonamento è scaduto.",
+      "ru": "Срок действия вашей подписки истёк."
+    },
+    "literal": {
+      "en": "您的订阅已经到期。",
+      "ja": "您的订阅已经到期。",
+      "ko": "您的订阅已经到期。",
+      "es": "您的订阅已经到期。",
+      "pt": "您的订阅已经到期。",
+      "de": "您的订阅已经到期。",
+      "fr": "您的订阅已经到期。",
+      "it": "您的订阅已经到期。",
+      "ru": "您的订阅已经到期。"
+    }
+  },
+  {
+    "id": "base-64",
+    "category": "订阅",
+    "zh": "这笔扣费是您的订阅续费。",
+    "keywords": [
+      "续费扣费",
+      "续费扣款",
+      "续订收费",
+      "订阅续费账单",
+      "这笔是续费"
+    ],
+    "translations": {
+      "en": "This charge is for the renewal of your subscription.",
+      "ja": "こちらのご請求は、サブスクリプションの更新料金です。",
+      "ko": "해당 청구 금액은 고객님의 구독 갱신 요금입니다.",
+      "es": "Este cargo corresponde a la renovación de su suscripción.",
+      "pt": "Essa cobrança corresponde à renovação da sua assinatura.",
+      "de": "Diese Abbuchung betrifft die Verlängerung Ihres Abonnements.",
+      "fr": "Ce prélèvement correspond au renouvellement de votre abonnement.",
+      "it": "Questo addebito riguarda il rinnovo del suo abbonamento.",
+      "ru": "Это списание связано с продлением вашей подписки."
+    },
+    "literal": {
+      "en": "这笔费用对应您订阅的续订。",
+      "ja": "这笔费用对应您订阅的续订。",
+      "ko": "这笔费用对应您订阅的续订。",
+      "es": "这笔费用对应您订阅的续订。",
+      "pt": "这笔费用对应您订阅的续订。",
+      "de": "这笔费用对应您订阅的续订。",
+      "fr": "这笔费用对应您订阅的续订。",
+      "it": "这笔费用对应您订阅的续订。",
+      "ru": "这笔费用对应您订阅的续订。"
+    }
+  },
+  {
+    "id": "base-65",
+    "category": "订阅",
+    "zh": "我们正在核查是否存在重复扣费。",
+    "keywords": [
+      "重复扣费",
+      "重复扣款",
+      "扣了两次",
+      "多扣",
+      "疑似重复收费"
+    ],
+    "translations": {
+      "en": "We're checking whether a duplicate charge was made.",
+      "ja": "重複して請求が行われたかどうかを確認しております。",
+      "ko": "중복 청구가 있었는지 확인하고 있습니다.",
+      "es": "Estamos comprobando si se ha producido un cargo duplicado.",
+      "pt": "Estamos verificando se houve uma cobrança em duplicidade.",
+      "de": "Wir prüfen, ob eine doppelte Abbuchung erfolgt ist.",
+      "fr": "Nous vérifions si un double prélèvement a eu lieu.",
+      "it": "Stiamo verificando se sia stato effettuato un doppio addebito.",
+      "ru": "Мы проверяем, произошло ли повторное списание."
+    },
+    "literal": {
+      "en": "我们正在核实是否发生了重复扣款。",
+      "ja": "我们正在核实是否发生了重复扣款。",
+      "ko": "我们正在核实是否发生了重复扣款。",
+      "es": "我们正在核实是否发生了重复扣款。",
+      "pt": "我们正在核实是否发生了重复扣款。",
+      "de": "我们正在核实是否发生了重复扣款。",
+      "fr": "我们正在核实是否发生了重复扣款。",
+      "it": "我们正在核实是否发生了重复扣款。",
+      "ru": "我们正在核实是否发生了重复扣款。"
+    }
+  },
+  {
+    "id": "base-66",
+    "category": "订阅",
+    "zh": "取消订阅后，已支付的费用不会自动退还。",
+    "keywords": [
+      "取消订阅退款",
+      "退订不自动退款",
+      "取消后费用",
+      "取消后自动退吗"
+    ],
+    "translations": {
+      "en": "Canceling your subscription doesn't automatically trigger a refund for payments you've already made.",
+      "ja": "サブスクリプションを解約しても、すでにお支払いいただいた料金は自動的には返金されません。",
+      "ko": "구독을 해지하셔도 이미 결제하신 금액은 자동으로 환불되지 않습니다.",
+      "es": "Al cancelar la suscripción, los pagos anteriores no se reembolsan automáticamente.",
+      "pt": "Ao cancelar a assinatura, os pagamentos já efetuados não são reembolsados automaticamente.",
+      "de": "Wenn Sie Ihr Abonnement kündigen, werden bereits geleistete Zahlungen nicht automatisch erstattet.",
+      "fr": "La résiliation de votre abonnement n’entraîne pas le remboursement automatique des paiements déjà effectués.",
+      "it": "L’annullamento dell’abbonamento non comporta il rimborso automatico dei pagamenti già effettuati.",
+      "ru": "При отмене подписки уже внесённые платежи не возвращаются автоматически."
+    },
+    "literal": {
+      "en": "取消订阅后，已付款项不会自动退还。",
+      "ja": "取消订阅后，已付款项不会自动退还。",
+      "ko": "取消订阅后，已付款项不会自动退还。",
+      "es": "取消订阅后，已付款项不会自动退还。",
+      "pt": "取消订阅后，已付款项不会自动退还。",
+      "de": "取消订阅后，已付款项不会自动退还。",
+      "fr": "取消订阅后，已付款项不会自动退还。",
+      "it": "取消订阅后，已付款项不会自动退还。",
+      "ru": "取消订阅后，已付款项不会自动退还。"
+    }
+  },
+  {
+    "id": "base-67",
+    "category": "订阅",
+    "zh": "我可以帮您核实下次续费日期。",
+    "keywords": [
+      "下次续费日期",
+      "续费日期",
+      "什么时候续费",
+      "下次扣费时间",
+      "续费时间"
+    ],
+    "translations": {
+      "en": "I can check your next renewal date for you.",
+      "ja": "次回の更新日をお調べできます。",
+      "ko": "다음 갱신 날짜를 확인해 드릴 수 있습니다.",
+      "es": "Puedo consultar la fecha de su próxima renovación.",
+      "pt": "Posso verificar a data da sua próxima renovação.",
+      "de": "Ich kann den Termin Ihrer nächsten Verlängerung für Sie prüfen.",
+      "fr": "Je peux vérifier la date de votre prochain renouvellement.",
+      "it": "Posso verificare per lei la data del prossimo rinnovo.",
+      "ru": "Я могу уточнить дату следующего продления вашей подписки."
+    },
+    "literal": {
+      "en": "我可以为您查一下下一次续订的日期。",
+      "ja": "我可以为您查一下下一次续订的日期。",
+      "ko": "我可以为您查一下下一次续订的日期。",
+      "es": "我可以为您查一下下一次续订的日期。",
+      "pt": "我可以为您查一下下一次续订的日期。",
+      "de": "我可以为您查一下下一次续订的日期。",
+      "fr": "我可以为您查一下下一次续订的日期。",
+      "it": "我可以为您查一下下一次续订的日期。",
+      "ru": "我可以为您查一下下一次续订的日期。"
+    }
+  },
+  {
+    "id": "base-68",
+    "category": "订阅",
+    "zh": "这笔续费付款未成功。",
+    "keywords": [
+      "续费付款失败",
+      "续费失败",
+      "自动续费失败",
+      "续费扣款失败",
+      "付款未成功"
+    ],
+    "translations": {
+      "en": "The payment for your subscription renewal was unsuccessful.",
+      "ja": "サブスクリプションの更新料金のお支払いが完了しませんでした。",
+      "ko": "구독 갱신 결제가 완료되지 않았습니다.",
+      "es": "No se pudo completar el pago de la renovación de su suscripción.",
+      "pt": "Não foi possível concluir o pagamento da renovação da sua assinatura.",
+      "de": "Die Zahlung für die Verlängerung Ihres Abonnements konnte nicht abgeschlossen werden.",
+      "fr": "Le paiement du renouvellement de votre abonnement n’a pas abouti.",
+      "it": "Il pagamento per il rinnovo dell’abbonamento non è andato a buon fine.",
+      "ru": "Платёж за продление подписки не прошёл."
+    },
+    "literal": {
+      "en": "这次订阅续费的付款没有成功。",
+      "ja": "这次订阅续费的付款没有成功。",
+      "ko": "这次订阅续费的付款没有成功。",
+      "es": "这次订阅续费的付款没有成功。",
+      "pt": "这次订阅续费的付款没有成功。",
+      "de": "这次订阅续费的付款没有成功。",
+      "fr": "这次订阅续费的付款没有成功。",
+      "it": "这次订阅续费的付款没有成功。",
+      "ru": "这次订阅续费的付款没有成功。"
+    }
+  },
+  {
+    "id": "base-69",
+    "category": "订阅",
+    "zh": "您的订阅已成功续费。",
+    "keywords": [
+      "续费成功",
+      "已续费",
+      "订阅已续期",
+      "续订成功",
+      "已续订"
+    ],
+    "translations": {
+      "en": "Your subscription has been successfully renewed.",
+      "ja": "サブスクリプションの更新が完了いたしました。",
+      "ko": "고객님의 구독이 정상적으로 갱신되었습니다.",
+      "es": "Su suscripción se ha renovado correctamente.",
+      "pt": "Sua assinatura foi renovada com sucesso.",
+      "de": "Ihr Abonnement wurde erfolgreich verlängert.",
+      "fr": "Votre abonnement a bien été renouvelé.",
+      "it": "Il suo abbonamento è stato rinnovato con successo.",
+      "ru": "Ваша подписка успешно продлена."
+    },
+    "literal": {
+      "en": "您的订阅已成功续订。",
+      "ja": "您的订阅续订已完成。",
+      "ko": "您的订阅已成功续订。",
+      "es": "您的订阅已成功续订。",
+      "pt": "您的订阅已成功续订。",
+      "de": "您的订阅已成功续订。",
+      "fr": "您的订阅已成功续订。",
+      "it": "您的订阅已成功续订。",
+      "ru": "您的订阅已成功续订。"
+    }
+  },
+  {
+    "id": "base-70",
+    "category": "订阅",
+    "zh": "我们已收到您的取消订阅请求。",
+    "keywords": [
+      "收到取消订阅请求",
+      "收到退订申请",
+      "取消申请已受理",
+      "退订请求已收到"
+    ],
+    "translations": {
+      "en": "We've received your request to cancel your subscription.",
+      "ja": "サブスクリプションの解約申請を受け付けました。",
+      "ko": "고객님의 구독 해지 요청을 접수했습니다.",
+      "es": "Hemos recibido su solicitud de cancelación de la suscripción.",
+      "pt": "Recebemos sua solicitação de cancelamento da assinatura.",
+      "de": "Wir haben Ihre Anfrage zur Kündigung Ihres Abonnements erhalten.",
+      "fr": "Nous avons bien reçu votre demande de résiliation de l’abonnement.",
+      "it": "Abbiamo ricevuto la sua richiesta di annullamento dell’abbonamento.",
+      "ru": "Мы получили ваш запрос на отмену подписки."
+    },
+    "literal": {
+      "en": "我们已收到您要求取消订阅的申请。",
+      "ja": "我们已收到您要求取消订阅的申请。",
+      "ko": "我们已收到您要求取消订阅的申请。",
+      "es": "我们已收到您要求取消订阅的申请。",
+      "pt": "我们已收到您要求取消订阅的申请。",
+      "de": "我们已收到您要求取消订阅的申请。",
+      "fr": "我们已收到您要求取消订阅的申请。",
+      "it": "我们已收到您要求取消订阅的申请。",
+      "ru": "我们已收到您要求取消订阅的申请。"
+    }
+  },
+  {
+    "id": "base-71",
+    "category": "订阅",
+    "zh": "我们会核查您取消订阅后收到的扣费。",
+    "keywords": [
+      "取消后还扣费",
+      "退订后又扣费",
+      "取消后扣费",
+      "解约后扣款",
+      "取消后仍扣费"
+    ],
+    "translations": {
+      "en": "We'll look into the charge that was made after you canceled your subscription.",
+      "ja": "サブスクリプションの解約後に発生したご請求について確認いたします。",
+      "ko": "구독을 해지하신 후 발생한 청구를 확인하겠습니다.",
+      "es": "Revisaremos el cargo que se realizó después de que cancelara su suscripción.",
+      "pt": "Vamos verificar a cobrança feita após o cancelamento da sua assinatura.",
+      "de": "Wir prüfen die Abbuchung, die nach der Kündigung Ihres Abonnements erfolgt ist.",
+      "fr": "Nous allons vérifier le prélèvement effectué après la résiliation de votre abonnement.",
+      "it": "Verificheremo l’addebito effettuato dopo l’annullamento dell’abbonamento.",
+      "ru": "Мы проверим списание, которое произошло после отмены вашей подписки."
+    },
+    "literal": {
+      "en": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "ja": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "ko": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "es": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "pt": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "de": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "fr": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "it": "我们会核实您取消订阅之后发生的这笔扣费。",
+      "ru": "我们会核实您取消订阅之后发生的这笔扣费。"
+    }
+  },
+  {
+    "id": "base-72",
+    "category": "订阅",
+    "zh": "请提供扣费日期和金额，以便我们核查。",
+    "keywords": [
+      "扣费日期",
+      "扣费金额",
+      "扣款时间",
+      "提供扣费日期和金额",
+      "核查扣费资料"
+    ],
+    "translations": {
+      "en": "Could you share the date and amount of the charge so we can look into it?",
+      "ja": "確認のため、ご請求の日付と金額をお知らせいただけますか。",
+      "ko": "확인할 수 있도록 청구 날짜와 금액을 알려 주시겠습니까?",
+      "es": "¿Podría indicarnos la fecha y el importe del cargo para que podamos revisarlo?",
+      "pt": "Poderia nos informar a data e o valor da cobrança para que possamos verificá-la?",
+      "de": "Könnten Sie uns bitte das Datum und den Betrag der Abbuchung nennen, damit wir sie prüfen können?",
+      "fr": "Pourriez-vous nous indiquer la date et le montant du prélèvement afin que nous puissions le vérifier ?",
+      "it": "Potrebbe indicarci la data e l’importo dell’addebito, così potremo verificarlo?",
+      "ru": "Не могли бы вы указать дату и сумму списания, чтобы мы могли его проверить?"
+    },
+    "literal": {
+      "en": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "ja": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "ko": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "es": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "pt": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "de": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "fr": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "it": "能否请您提供扣费的日期和金额，以便我们核实？",
+      "ru": "能否请您提供扣费的日期和金额，以便我们核实？"
+    }
+  },
+  {
+    "id": "base-73",
+    "category": "订阅",
+    "zh": "我可以为您核实试用结束日期和续费设置。",
+    "keywords": [
+      "试用到期",
+      "试用结束",
+      "试用续费",
+      "试用何时结束",
+      "试用什么时候结束"
+    ],
+    "translations": {
+      "en": "I can check when your trial ends and review your renewal settings.",
+      "ja": "体験期間の終了日と更新設定をお調べできます。",
+      "ko": "체험 기간 종료일과 갱신 설정을 확인해 드릴 수 있습니다.",
+      "es": "Puedo comprobar cuándo termina su período de prueba y revisar la configuración de la renovación.",
+      "pt": "Posso verificar quando termina seu período de teste e conferir as configurações de renovação.",
+      "de": "Ich kann prüfen, wann Ihr Testzeitraum endet und wie die Verlängerung eingestellt ist.",
+      "fr": "Je peux vérifier la date de fin de votre période d’essai et vos paramètres de renouvellement.",
+      "it": "Posso verificare quando termina il periodo di prova e controllare le impostazioni di rinnovo.",
+      "ru": "Я могу уточнить, когда закончится пробный период, и проверить настройки продления."
+    },
+    "literal": {
+      "en": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "ja": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "ko": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "es": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "pt": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "de": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "fr": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "it": "我可以帮您查一下试用何时结束，以及当前续订设置。",
+      "ru": "我可以帮您查一下试用何时结束，以及当前续订设置。"
+    }
+  },
+  {
+    "id": "base-74",
+    "category": "订阅",
+    "zh": "您的取消订阅请求还在处理中。",
+    "keywords": [
+      "取消订阅处理中",
+      "取消申请还在处理",
+      "退订申请处理中",
+      "取消尚未完成"
+    ],
+    "translations": {
+      "en": "Your request to cancel your subscription is being processed.",
+      "ja": "サブスクリプションの解約申請は現在処理中です。",
+      "ko": "고객님의 구독 해지 요청을 처리하고 있습니다.",
+      "es": "Su solicitud de cancelación de la suscripción se está tramitando.",
+      "pt": "Sua solicitação de cancelamento da assinatura está sendo processada.",
+      "de": "Ihre Anfrage zur Kündigung Ihres Abonnements wird derzeit bearbeitet.",
+      "fr": "Votre demande de résiliation de l’abonnement est en cours de traitement.",
+      "it": "La sua richiesta di annullamento dell’abbonamento è in fase di elaborazione.",
+      "ru": "Ваш запрос на отмену подписки обрабатывается."
+    },
+    "literal": {
+      "en": "您的退订申请正在办理中。",
+      "ja": "您的退订申请正在办理中。",
+      "ko": "我们正在处理您的取消订阅请求。",
+      "es": "您的退订申请正在办理中。",
+      "pt": "您的退订申请正在办理中。",
+      "de": "您的退订申请正在办理中。",
+      "fr": "您的退订申请正在办理中。",
+      "it": "您的退订申请正在办理中。",
+      "ru": "您的退订申请正在办理中。"
+    }
+  },
+  {
+    "id": "base-75",
+    "category": "订阅",
+    "zh": "您可以在订阅设置中关闭自动续费。",
+    "keywords": [
+      "关闭自动续费",
+      "取消自动续费",
+      "怎么关闭自动续费",
+      "怎样取消自动续费",
+      "停止自动续费"
+    ],
+    "translations": {
+      "en": "You can turn off automatic renewal in your subscription settings.",
+      "ja": "サブスクリプションの設定画面から自動更新を停止できます。",
+      "ko": "구독 설정에서 자동 갱신을 해제하실 수 있습니다.",
+      "es": "Puede desactivar la renovación automática en la configuración de su suscripción.",
+      "pt": "Você pode desativar a renovação automática nas configurações da assinatura.",
+      "de": "Sie können die automatische Verlängerung in den Abonnementeinstellungen deaktivieren.",
+      "fr": "Vous pouvez désactiver le renouvellement automatique dans les paramètres de votre abonnement.",
+      "it": "Può disattivare il rinnovo automatico nelle impostazioni dell’abbonamento.",
+      "ru": "Вы можете отключить автоматическое продление в настройках подписки."
+    },
+    "literal": {
+      "en": "您可以在订阅设置中停用自动续订。",
+      "ja": "您可以在订阅设置中停用自动续订。",
+      "ko": "您可以在订阅设置中停用自动续订。",
+      "es": "您可以在订阅设置中停用自动续订。",
+      "pt": "您可以在订阅设置中停用自动续订。",
+      "de": "您可以在订阅设置中停用自动续订。",
+      "fr": "您可以在订阅设置中停用自动续订。",
+      "it": "您可以在订阅设置中停用自动续订。",
+      "ru": "您可以在订阅设置中停用自动续订。"
+    }
+  },
+  {
+    "id": "base-76",
+    "category": "退款",
+    "zh": "我已为您提交退款申请。",
+    "keywords": [
+      "已提交退款申请",
+      "退款申请已提交",
+      "申请退款已提交",
+      "已经提交退款申请",
+      "帮您提交退款申请"
+    ],
+    "translations": {
+      "en": "I've submitted a refund request for you.",
+      "ja": "返金申請を提出いたしました。",
+      "ko": "고객님을 대신해 환불 신청을 제출했습니다.",
+      "es": "He presentado una solicitud de reembolso por usted.",
+      "pt": "Enviei uma solicitação de reembolso em seu nome.",
+      "de": "Ich habe einen Erstattungsantrag für Sie eingereicht.",
+      "fr": "J’ai soumis une demande de remboursement pour vous.",
+      "it": "Ho presentato una richiesta di rimborso per lei.",
+      "ru": "Заявка на возврат средств подана от вашего имени."
+    },
+    "literal": {
+      "en": "我已经为您提交了退款申请。",
+      "ja": "我已经为您提交了退款申请。",
+      "ko": "我已经为您提交了退款申请。",
+      "es": "我已经为您提交了退款申请。",
+      "pt": "我已经为您提交了退款申请。",
+      "de": "我已经为您提交了退款申请。",
+      "fr": "我已经为您提交了退款申请。",
+      "it": "我已经为您提交了退款申请。",
+      "ru": "退款申请已代表您提交。"
+    }
+  }
+]
+</script>
+<script id="legacy-data" type="application/json">
+[
+  {
+    "id": "base-1",
+    "zh": "你好，请问有什么可以帮你？",
+    "category": "开场",
+    "keywords": [
+      "你好",
+      "您好",
+      "有什么可以帮你",
+      "需要帮助",
+      "欢迎咨询",
+      "有什么问题",
+      "在吗"
+    ],
+    "translations": {
+      "en": "Hi there! How can I help you today?",
+      "ja": "こんにちは。本日はどのようなご用件でしょうか。",
+      "ko": "안녕하세요. 무엇을 도와드릴까요?",
+      "es": "¡Hola! ¿En qué puedo ayudarle hoy?",
+      "pt": "Olá! Como posso ajudar você hoje?"
+    }
+  },
+  {
+    "id": "base-2",
+    "zh": "我在的，请讲。",
+    "category": "开场",
+    "keywords": [
+      "我在",
+      "请讲",
+      "你说",
+      "在的",
+      "请说"
+    ],
+    "translations": {
+      "en": "I'm here — what's going on?",
+      "ja": "はい、承っております。どのようなお困りごとでしょうか。",
+      "ko": "네, 듣고 있습니다. 어떤 문제인지 말씀해 주시겠어요?",
+      "es": "Estoy aquí — cuénteme, ¿qué está pasando?",
+      "pt": "Estou aqui — me conte, o que está acontecendo?"
+    }
+  },
+  {
+    "id": "base-3",
+    "zh": "你什么问题？",
+    "category": "开场",
+    "keywords": [
+      "什么问题",
+      "怎么了",
+      "发生什么",
+      "遇到什么",
+      "说说"
+    ],
+    "translations": {
+      "en": "Could you tell me a bit more about what's happening?",
+      "ja": "どのような状況か、もう少し詳しく教えていただけますか。",
+      "ko": "어떤 상황인지 조금 더 자세히 알려주시겠어요?",
+      "es": "¿Podría contarme un poco más sobre lo que está ocurriendo?",
+      "pt": "Poderia me contar um pouco mais sobre o que está acontecendo?"
+    }
+  },
+  {
+    "id": "base-4",
+    "zh": "请问怎么称呼你？",
+    "category": "开场",
+    "keywords": [
+      "怎么称呼",
+      "姓名",
+      "名字",
+      "贵姓"
+    ],
+    "translations": {
+      "en": "May I have your name, please?",
+      "ja": "お名前を伺ってもよろしいでしょうか。",
+      "ko": "성함을 여쭤봐도 될까요?",
+      "es": "¿Me permite su nombre, por favor?",
+      "pt": "Poderia me informar seu nome, por favor?"
+    }
+  },
+  {
+    "id": "base-5",
+    "zh": "请稍等。",
+    "category": "等待",
+    "keywords": [
+      "请稍等",
+      "稍等",
+      "等一下",
+      "稍候",
+      "稍等片刻",
+      "等一会",
+      "等我一下"
+    ],
+    "translations": {
+      "en": "Could you give me a moment, please?",
+      "ja": "少々お待ちいただけますか。",
+      "ko": "잠시만 기다려 주시겠어요?",
+      "es": "¿Podría esperar un momento, por favor?",
+      "pt": "Poderia aguardar um momento, por favor?"
+    }
+  },
+  {
+    "id": "base-6",
+    "zh": "稍等，我查一下。",
+    "category": "等待",
+    "keywords": [
+      "查一下",
+      "我看一下",
+      "我看下",
+      "确认一下",
+      "核实",
+      "查询"
+    ],
+    "translations": {
+      "en": "Give me just a moment to look into this for you.",
+      "ja": "少々お時間をいただければ、すぐに調べます。",
+      "ko": "잠시만 주시면 바로 확인해 보겠습니다.",
+      "es": "Deme un momento, por favor, y lo reviso.",
+      "pt": "Me dá só um instante que eu verifico para você."
+    }
+  },
+  {
+    "id": "base-7",
+    "zh": "请耐心等待。",
+    "category": "等待",
+    "keywords": [
+      "耐心等待",
+      "再等一下",
+      "再等一会"
+    ],
+    "translations": {
+      "en": "Thank you for your patience. Could you give us a little more time?",
+      "ja": "恐れ入りますが、もうしばらくお待ちいただけますか。",
+      "ko": "기다려 주셔서 감사합니다. 조금만 더 기다려 주시겠어요?",
+      "es": "Gracias por su paciencia. ¿Podría esperar un poco más?",
+      "pt": "Agradeço pela paciência. Poderia aguardar mais um pouco?"
+    }
+  },
+  {
+    "id": "base-8",
+    "zh": "不好意思让你久等了。",
+    "category": "等待",
+    "keywords": [
+      "久等",
+      "让你等",
+      "等很久",
+      "抱歉久等"
+    ],
+    "translations": {
+      "en": "I'm sorry to have kept you waiting.",
+      "ja": "お待たせしてしまい、申し訳ございません。",
+      "ko": "오래 기다리게 해서 죄송합니다.",
+      "es": "Siento haberle hecho esperar.",
+      "pt": "Desculpe ter feito você esperar."
+    }
+  },
+  {
+    "id": "base-9",
+    "zh": "还需要一点时间。",
+    "category": "等待",
+    "keywords": [
+      "还需要时间",
+      "再等等",
+      "需要一点时间"
+    ],
+    "translations": {
+      "en": "We'll need a little more time. Thank you for your patience.",
+      "ja": "もう少しお時間をいただけますでしょうか。",
+      "ko": "시간이 조금 더 필요합니다. 기다려 주셔서 감사합니다.",
+      "es": "Necesitaremos un poco más de tiempo. Gracias por su paciencia.",
+      "pt": "Vamos precisar de mais um pouco de tempo. Agradeço pela paciência."
+    }
+  },
+  {
+    "id": "base-10",
+    "zh": "很抱歉给你带来不便。",
+    "category": "道歉",
+    "keywords": [
+      "抱歉",
+      "不便",
+      "对不起",
+      "抱歉给您"
+    ],
+    "translations": {
+      "en": "I'm really sorry for the trouble this has caused.",
+      "ja": "ご不便をおかけして、大変申し訳ございません。",
+      "ko": "불편을 드려 정말 죄송합니다.",
+      "es": "Siento mucho las molestias que esto le ha causado.",
+      "pt": "Sinto muito pelo transtorno que isso causou."
+    }
+  },
+  {
+    "id": "base-11",
+    "zh": "非常抱歉，是我们的问题。",
+    "category": "道歉",
+    "keywords": [
+      "是我们的问题",
+      "我们的错",
+      "我的错"
+    ],
+    "translations": {
+      "en": "I'm very sorry. This was our mistake.",
+      "ja": "こちらの不手際で、大変申し訳ございません。",
+      "ko": "저희 쪽 실수였습니다. 정말 죄송합니다.",
+      "es": "Lo sentimos mucho. Fue un error nuestro.",
+      "pt": "Sentimos muito. Foi um erro nosso."
+    }
+  },
+  {
+    "id": "base-12",
+    "zh": "抱歉，我无法……",
+    "category": "道歉",
+    "keywords": [
+      "我无法",
+      "我不能",
+      "做不了",
+      "没办法"
+    ],
+    "translations": {
+      "en": "I'm afraid I'm not able to…",
+      "ja": "申し訳ございませんが、私では対応いたしかねます。",
+      "ko": "죄송하지만 제가 처리해 드리기 어렵습니다.",
+      "es": "Me temo que no me es posible…",
+      "pt": "Infelizmente não consigo…"
+    }
+  },
+  {
+    "id": "base-13",
+    "zh": "请原谅我们的失误。",
+    "category": "道歉",
+    "keywords": [
+      "我们的失误",
+      "我们的疏忽",
+      "原谅"
+    ],
+    "translations": {
+      "en": "Please accept our apologies for the oversight.",
+      "ja": "こちらの不手際をお詫びいたします。",
+      "ko": "저희의 실수에 대해 사과드립니다.",
+      "es": "Le pedimos disculpas por nuestro descuido.",
+      "pt": "Pedimos desculpas pela nossa falha."
+    }
+  },
+  {
+    "id": "base-14",
+    "zh": "我理解你的着急。",
+    "category": "安抚",
+    "keywords": [
+      "理解",
+      "着急",
+      "心急",
+      "我知道你急",
+      "生气",
+      "发火",
+      "投诉",
+      "不满",
+      "烦躁"
+    ],
+    "translations": {
+      "en": "I completely understand why you're frustrated.",
+      "ja": "お気持ち、よく分かります。ご不安な点はごもっともです。",
+      "ko": "충분히 이해합니다. 답답하신 마음 잘 알고 있습니다.",
+      "es": "Entiendo perfectamente su frustración.",
+      "pt": "Entendo perfeitamente a sua frustração."
+    }
+  },
+  {
+    "id": "base-15",
+    "zh": "我明白你的感受。",
+    "category": "安抚",
+    "keywords": [
+      "明白你",
+      "感受",
+      "理解你",
+      "懂你"
+    ],
+    "translations": {
+      "en": "I hear you — that sounds really frustrating.",
+      "ja": "おっしゃる通りだと思います。大変な状況ですよね。",
+      "ko": "무슨 말씀인지 알겠습니다. 정말 답답하셨겠어요.",
+      "es": "Le entiendo — suena realmente frustrante.",
+      "pt": "Entendo você — deve ser realmente frustrante."
+    }
+  },
+  {
+    "id": "base-16",
+    "zh": "请冷静。",
+    "category": "安抚",
+    "keywords": [
+      "冷静",
+      "别激动",
+      "别生气",
+      "平静"
+    ],
+    "translations": {
+      "en": "I understand this is frustrating. Let's take this one step at a time.",
+      "ja": "ご不快なお気持ち、お察しいたします。一つずつ確認してまいりましょう。",
+      "ko": "답답하신 마음 이해합니다. 하나씩 차근차근 살펴보겠습니다.",
+      "es": "Entiendo que esto le resulte frustrante. Veámoslo paso a paso.",
+      "pt": "Entendo que isso seja frustrante. Vamos analisar a situação passo a passo."
+    }
+  },
+  {
+    "id": "base-17",
+    "zh": "别担心。",
+    "category": "安抚",
+    "keywords": [
+      "别担心",
+      "不用担心",
+      "放心"
+    ],
+    "translations": {
+      "en": "I understand your concern. Please don't worry.",
+      "ja": "ご心配かと存じますが、どうぞご安心ください。",
+      "ko": "걱정되실 수 있지만 너무 염려하지 않으셔도 됩니다.",
+      "es": "Comprendo su preocupación. Puede quedarse con tranquilidad.",
+      "pt": "Entendo a sua preocupação. Por favor, fique à vontade."
+    }
+  },
+  {
+    "id": "base-18",
+    "zh": "请提供订单号。",
+    "category": "请求",
+    "keywords": [
+      "订单号",
+      "单号",
+      "订单编号",
+      "提供订单"
+    ],
+    "translations": {
+      "en": "Could you share your order number so I can look into this?",
+      "ja": "お手数ですが、注文番号をお知らせいただけますか。",
+      "ko": "주문 번호를 알려주시면 확인해 드리겠습니다.",
+      "es": "¿Podría facilitarme su número de pedido para revisarlo?",
+      "pt": "Poderia me informar o número do pedido para eu verificar?"
+    }
+  },
+  {
+    "id": "base-19",
+    "zh": "请发截图。",
+    "category": "请求",
+    "keywords": [
+      "截图",
+      "发图",
+      "发截图",
+      "发送截图",
+      "上传截图"
+    ],
+    "translations": {
+      "en": "Could you send a screenshot, please?",
+      "ja": "スクリーンショットをお送りいただけますか。",
+      "ko": "스크린샷을 보내 주시겠어요?",
+      "es": "¿Podría enviarnos una captura de pantalla, por favor?",
+      "pt": "Poderia nos enviar uma captura de tela, por favor?"
+    }
+  },
+  {
+    "id": "base-20",
+    "zh": "请再说一遍。",
+    "category": "请求",
+    "keywords": [
+      "再说一遍",
+      "重复",
+      "没听清",
+      "再说一次"
+    ],
+    "translations": {
+      "en": "Sorry, could you say that again for me, please?",
+      "ja": "恐れ入ります、もう一度おっしゃっていただけますか。",
+      "ko": "죄송하지만 한 번만 다시 말씀해 주시겠어요?",
+      "es": "Disculpe, ¿podría repetirlo, por favor?",
+      "pt": "Desculpe, poderia repetir, por favor?"
+    }
+  },
+  {
+    "id": "base-21",
+    "zh": "你听懂了吗？",
+    "category": "请求",
+    "keywords": [
+      "听懂",
+      "明白吗",
+      "理解吗",
+      "清楚吗"
+    ],
+    "translations": {
+      "en": "Does that make sense? Just to make sure I've explained it clearly.",
+      "ja": "ここまででご不明な点はございませんか。",
+      "ko": "제가 설명을 잘 드렸는지 모르겠네요. 이해되셨을까요?",
+      "es": "¿Se entiende? Solo para asegurarme de que me expliqué bien.",
+      "pt": "Ficou claro? Só para garantir que expliquei bem."
+    }
+  },
+  {
+    "id": "base-22",
+    "zh": "请重启 App。",
+    "category": "请求",
+    "keywords": [
+      "重启",
+      "重启应用",
+      "重新打开应用",
+      "重新打开app"
+    ],
+    "translations": {
+      "en": "Could you try restarting the app, please?",
+      "ja": "アプリを一度再起動していただけますか。",
+      "ko": "앱을 한 번 재시작해 주시겠어요?",
+      "es": "¿Podría reiniciar la aplicación, por favor?",
+      "pt": "Poderia reiniciar o aplicativo, por favor?"
+    }
+  },
+  {
+    "id": "base-23",
+    "zh": "请保持电话畅通。",
+    "category": "请求",
+    "keywords": [
+      "电话",
+      "保持畅通",
+      "联系你",
+      "接电话"
+    ],
+    "translations": {
+      "en": "Could you keep your phone handy so we can reach you?",
+      "ja": "ご連絡できるよう、お電話に出やすい状態でお待ちいただけますか。",
+      "ko": "연락드릴 수 있도록 전화를 받으실 수 있는 상태로 있어 주시겠어요?",
+      "es": "¿Podría tener el teléfono a mano para que podamos localizarle?",
+      "pt": "Poderia deixar o telefone por perto para conseguirmos contato?"
+    }
+  },
+  {
+    "id": "base-24",
+    "zh": "不行。",
+    "category": "拒绝",
+    "keywords": [
+      "不行",
+      "不可以",
+      "做不到",
+      "无法办理"
+    ],
+    "translations": {
+      "en": "I'm sorry, but we aren't able to do that.",
+      "ja": "申し訳ございませんが、そちらは対応いたしかねます。",
+      "ko": "죄송하지만 해당 요청은 처리해 드리기 어렵습니다.",
+      "es": "Lo siento, pero no podemos hacerlo.",
+      "pt": "Sinto muito, mas não podemos fazer isso."
+    }
+  },
+  {
+    "id": "base-25",
+    "zh": "这是规定。",
+    "category": "拒绝",
+    "keywords": [
+      "规定",
+      "政策",
+      "制度",
+      "规则"
+    ],
+    "translations": {
+      "en": "This is how our policy works, and I'm happy to explain why.",
+      "ja": "こちらは規定に基づく対応となっております。理由も含めてご説明いたします。",
+      "ko": "이는 규정에 따른 처리입니다. 이유도 함께 설명드리겠습니다.",
+      "es": "Así funciona nuestra política, y con gusto le explico el motivo.",
+      "pt": "É assim que nossa política funciona, e posso explicar o motivo."
+    }
+  },
+  {
+    "id": "base-26",
+    "zh": "我们无法退款。",
+    "category": "拒绝",
+    "keywords": [
+      "无法退款",
+      "不能退款",
+      "不能退",
+      "不予退款",
+      "退不了",
+      "退不了款"
+    ],
+    "translations": {
+      "en": "I'm sorry, but we're unable to issue a refund.",
+      "ja": "恐れ入りますが、返金はいたしかねます。",
+      "ko": "죄송하지만 환불해 드리기 어렵습니다.",
+      "es": "Lo siento, pero no podemos realizar un reembolso.",
+      "pt": "Sinto muito, mas não podemos fazer o reembolso."
+    }
+  },
+  {
+    "id": "base-27",
+    "zh": "你错了。",
+    "category": "拒绝",
+    "keywords": [
+      "你错了",
+      "不是这样",
+      "搞错了"
+    ],
+    "translations": {
+      "en": "I think there may have been a misunderstanding — let me double-check.",
+      "ja": "おそらく行き違いがあったかと思います。私のほうでもう一度確認いたします。",
+      "ko": "아마 오해가 있으셨던 것 같습니다. 제가 다시 한번 확인해 보겠습니다.",
+      "es": "Creo que puede haber habido un malentendido — déjeme comprobarlo de nuevo.",
+      "pt": "Acho que pode ter havido um mal-entendido — deixa eu verificar de novo."
+    }
+  },
+  {
+    "id": "base-28",
+    "zh": "您可以自行取消订阅。",
+    "category": "订阅",
+    "keywords": [
+      "怎么取消",
+      "如何取消",
+      "自己取消",
+      "取消订阅",
+      "怎么退订",
+      "如何退订",
+      "解约"
+    ],
+    "translations": {
+      "en": "You can cancel the subscription yourself.",
+      "ja": "サブスクリプションはお客様ご自身で解約いただけます。",
+      "ko": "구독은 직접 해지하실 수 있습니다.",
+      "es": "Puede cancelar la suscripción por su cuenta.",
+      "pt": "Você pode cancelar a assinatura por conta própria."
+    }
+  },
+  {
+    "id": "base-29",
+    "zh": "已经帮你取消了。",
+    "category": "订阅",
+    "keywords": [
+      "已取消订阅",
+      "取消成功",
+      "取消了订阅",
+      "订阅已取消",
+      "解约了",
+      "已取消"
+    ],
+    "translations": {
+      "en": "I've canceled your subscription.",
+      "ja": "サブスクリプションを解約いたしました。",
+      "ko": "구독을 해지해 드렸습니다.",
+      "es": "He cancelado su suscripción.",
+      "pt": "Cancelei a sua assinatura."
+    }
+  },
+  {
+    "id": "base-30",
+    "zh": "这个费用不能退。",
+    "category": "订阅",
+    "keywords": [
+      "费用不退",
+      "这笔费用不能退",
+      "该费用无法退还"
+    ],
+    "translations": {
+      "en": "I'm sorry, but this charge is non-refundable.",
+      "ja": "恐れ入りますが、こちらの料金は返金いたしかねます。",
+      "ko": "죄송하지만 이 요금은 환불되지 않습니다.",
+      "es": "Lo siento, pero este cargo no es reembolsable.",
+      "pt": "Sinto muito, mas esta cobrança não é reembolsável."
+    }
+  },
+  {
+    "id": "base-31",
+    "zh": "退款需要 3-5 个工作日。",
+    "category": "订阅",
+    "keywords": [
+      "退款时间",
+      "退款多久到账",
+      "退款需要多久",
+      "退款进度"
+    ],
+    "translations": {
+      "en": "The refund takes 3–5 business days.",
+      "ja": "返金には3〜5営業日かかります。",
+      "ko": "환불에는 영업일 기준 3~5일이 걸립니다.",
+      "es": "El reembolso tarda entre 3 y 5 días hábiles.",
+      "pt": "O reembolso leva de 3 a 5 dias úteis."
+    }
+  },
+  {
+    "id": "base-32",
+    "zh": "到期会自动续费。",
+    "category": "订阅",
+    "keywords": [
+      "自动续费",
+      "到期续费",
+      "自动续订"
+    ],
+    "translations": {
+      "en": "Your subscription will renew automatically when the current period ends.",
+      "ja": "ご契約期間の満了時に、サブスクリプションは自動更新されます。",
+      "ko": "이용 기간이 끝나면 구독이 자동으로 갱신됩니다.",
+      "es": "Su suscripción se renovará automáticamente al finalizar el período actual.",
+      "pt": "Sua assinatura será renovada automaticamente quando o período atual terminar."
+    }
+  },
+  {
+    "id": "base-33",
+    "zh": "为什么还在扣费？",
+    "category": "订阅",
+    "keywords": [
+      "还在扣费",
+      "又扣费",
+      "重复扣费",
+      "扣款",
+      "扣了两次",
+      "多扣",
+      "扣了钱"
+    ],
+    "translations": {
+      "en": "I can see why that's alarming. Let me pull up the charges on your account and walk you through exactly what each one was for.",
+      "ja": "ご不安なお気持ち、よく分かります。ご請求内容を確認して、一件ずつご説明いたします。",
+      "ko": "놀라셨겠습니다. 결제 내역을 확인해서 하나씩 설명드리겠습니다.",
+      "es": "Entiendo que sea alarmante. Voy a revisar los cargos de su cuenta y le explico uno por uno.",
+      "pt": "Entendo o susto. Vou verificar as cobranças da sua conta e explicar uma por uma."
+    }
+  },
+  {
+    "id": "base-34",
+    "zh": "我们会尽快处理。",
+    "category": "进度",
+    "keywords": [
+      "尽快",
+      "马上处理",
+      "尽快处理"
+    ],
+    "translations": {
+      "en": "We'll look into this as soon as we can.",
+      "ja": "できるだけ早く対応いたします。",
+      "ko": "최대한 빨리 처리하겠습니다.",
+      "es": "Nos ocuparemos de ello lo antes posible.",
+      "pt": "Vamos tratar disso assim que possível."
+    }
+  },
+  {
+    "id": "base-35",
+    "zh": "已提交，请等待。",
+    "category": "进度",
+    "keywords": [
+      "已提交",
+      "提交了",
+      "已反馈"
+    ],
+    "translations": {
+      "en": "I've submitted this. Thank you for your patience.",
+      "ja": "提出が完了しました。少々お待ちいただけますか。",
+      "ko": "제출했습니다. 잠시만 기다려 주시겠어요?",
+      "es": "Ya lo he enviado. Gracias por su paciencia.",
+      "pt": "Já enviei. Agradeço pela paciência."
+    }
+  },
+  {
+    "id": "base-36",
+    "zh": "需要 1-3 个工作日。",
+    "category": "进度",
+    "keywords": [
+      "处理时长",
+      "处理时间"
+    ],
+    "translations": {
+      "en": "This takes 1–3 business days.",
+      "ja": "1〜3営業日かかります。",
+      "ko": "영업일 기준 1~3일이 걸립니다.",
+      "es": "El proceso tarda de 1 a 3 días hábiles.",
+      "pt": "O processo leva de 1 a 3 dias úteis."
+    }
+  },
+  {
+    "id": "base-37",
+    "zh": "有结果会通知你。",
+    "category": "进度",
+    "keywords": [
+      "通知你",
+      "有结果",
+      "告诉你",
+      "联系你"
+    ],
+    "translations": {
+      "en": "I'll let you know as soon as there's an update.",
+      "ja": "結果が出ましたらすぐにご連絡いたします。",
+      "ko": "결과가 나오는 대로 바로 알려드리겠습니다.",
+      "es": "Le avisaré en cuanto haya novedades.",
+      "pt": "Aviso assim que tiver novidades."
+    }
+  },
+  {
+    "id": "base-38",
+    "zh": "这个问题需要升级处理。",
+    "category": "升级",
+    "keywords": [
+      "升级",
+      "转交",
+      "上报",
+      "专家",
+      "二线"
+    ],
+    "translations": {
+      "en": "I'm escalating this to our specialist team so it gets the attention it deserves.",
+      "ja": "専門チームに引き継ぎ、しっかり対応させていただきます。",
+      "ko": "전문 팀에 전달해서 제대로 처리되도록 하겠습니다.",
+      "es": "Voy a escalarlo a nuestro equipo especializado para que reciba la atención que merece.",
+      "pt": "Vou encaminhar para nossa equipe especializada, para que receba a atenção devida."
+    }
+  },
+  {
+    "id": "base-39",
+    "zh": "我帮你转接。",
+    "category": "升级",
+    "keywords": [
+      "转接",
+      "转给",
+      "转人工"
+    ],
+    "translations": {
+      "en": "Let me transfer you to a colleague who can help.",
+      "ja": "担当の者におつなぎいたします。",
+      "ko": "담당자에게 연결해 드리겠습니다.",
+      "es": "Le pongo en contacto con la persona encargada.",
+      "pt": "Vou encaminhar você para a pessoa responsável."
+    }
+  },
+  {
+    "id": "base-40",
+    "zh": "这是系统问题。",
+    "category": "技术",
+    "keywords": [
+      "我们系统的问题",
+      "系统故障",
+      "系统异常"
+    ],
+    "translations": {
+      "en": "This is an issue with our system.",
+      "ja": "こちらのシステムの不具合でございます。",
+      "ko": "저희 시스템에 문제가 있습니다.",
+      "es": "Se trata de un problema en nuestro sistema.",
+      "pt": "Trata-se de um problema no nosso sistema."
+    }
+  },
+  {
+    "id": "base-41",
+    "zh": "你可以尝试清除缓存。",
+    "category": "技术",
+    "keywords": [
+      "清除缓存",
+      "清缓存",
+      "删除缓存"
+    ],
+    "translations": {
+      "en": "You could try clearing the cache.",
+      "ja": "キャッシュの削除をお試しいただけますか。",
+      "ko": "캐시를 삭제해 보시겠어요?",
+      "es": "Puede probar a borrar la caché.",
+      "pt": "Você pode tentar limpar o cache."
+    }
+  },
+  {
+    "id": "base-42",
+    "zh": "还有其他问题吗？",
+    "category": "收尾",
+    "keywords": [
+      "还有其他问题",
+      "还有问题",
+      "就这些",
+      "结束"
+    ],
+    "translations": {
+      "en": "Is there anything else I can help you with today?",
+      "ja": "ほかにご不明な点はございますか。",
+      "ko": "더 궁금하신 점이 있으실까요?",
+      "es": "¿Hay algo más en lo que pueda ayudarle hoy?",
+      "pt": "Posso ajudar em mais alguma coisa hoje?"
+    }
+  },
+  {
+    "id": "base-43",
+    "zh": "祝你生活愉快。",
+    "category": "收尾",
+    "keywords": [
+      "祝你",
+      "愉快",
+      "好的一天",
+      "再见"
+    ],
+    "translations": {
+      "en": "Have a great day!",
+      "ja": "よい一日をお過ごしください。",
+      "ko": "좋은 하루 보내세요!",
+      "es": "¡Que tenga un buen día!",
+      "pt": "Tenha um ótimo dia!"
+    }
+  },
+  {
+    "id": "base-44",
+    "zh": "感谢你的耐心。",
+    "category": "收尾",
+    "keywords": [
+      "感谢耐心",
+      "谢谢等待",
+      "耐心"
+    ],
+    "translations": {
+      "en": "Thank you so much for your patience.",
+      "ja": "ご理解とご協力、誠にありがとうございます。",
+      "ko": "기다려 주셔서 정말 감사합니다.",
+      "es": "Muchas gracias por su paciencia.",
+      "pt": "Muito obrigado pela paciência."
+    }
+  },
+  {
+    "id": "base-45",
+    "zh": "已经为您退款。",
+    "category": "退款",
+    "keywords": [
+      "已退款",
+      "已经退款",
+      "退款已处理",
+      "已经退了",
+      "已退款成功"
+    ],
+    "translations": {
+      "en": "We've issued your refund.",
+      "ja": "返金のお手続きが完了いたしました。",
+      "ko": "환불 처리가 완료되었습니다.",
+      "es": "Ya hemos emitido su reembolso.",
+      "pt": "Já emitimos o seu reembolso."
+    }
+  },
+  {
+    "id": "base-46",
+    "zh": "这笔订单可以退款。",
+    "category": "退款",
+    "keywords": [
+      "可以退款",
+      "能退款",
+      "支持退款",
+      "可以退",
+      "能退"
+    ],
+    "translations": {
+      "en": "We can issue a refund for this order.",
+      "ja": "こちらのご注文は返金が可能です。",
+      "ko": "이 주문은 환불이 가능합니다.",
+      "es": "Podemos realizar un reembolso para este pedido.",
+      "pt": "Podemos reembolsar este pedido."
+    }
+  },
+  {
+    "id": "base-47",
+    "zh": "到期不会自动续费。",
+    "category": "订阅",
+    "keywords": [
+      "不会续费",
+      "不会自动续费",
+      "到期不续费"
+    ],
+    "translations": {
+      "en": "Your subscription won't renew automatically when the current period ends.",
+      "ja": "ご契約期間の満了時に、サブスクリプションは自動更新されません。",
+      "ko": "이용 기간이 끝나면 구독은 자동으로 갱신되지 않습니다.",
+      "es": "Su suscripción no se renovará automáticamente al finalizar el período actual.",
+      "pt": "Sua assinatura não será renovada automaticamente quando o período atual terminar."
+    }
+  }
+]
+</script>
+<script>
+"use strict";
+
+const languages = { en: "英语", ja: "日语", ko: "韩语", es: "西班牙语", pt: "葡萄牙语", de: "德语", fr: "法语", it: "意大利语", ru: "俄语" };
+const maxEntries = 500;
+const storageKey = "cs_translator_library_v4";
+const legacyStorageKey = "cs_translator_library_v3";
+const settingsKey = "cs_translator_settings_v4";
+const $ = (id) => document.getElementById(id);
+const source = $("source");
+const output = $("translation");
+const builtins = JSON.parse($("builtin-data").textContent);
+const legacyBuiltins = JSON.parse($("legacy-data").textContent);
+const providers = {
+  deepseek: {name: "DeepSeek", base: "https://api.deepseek.com", models: ["deepseek-flash", "deepseek-v4-pro"]},
+  openai: {name: "OpenAI", base: "https://api.openai.com/v1", models: ["gpt-5.4-mini", "gpt-5.4"]},
+  gemini: {name: "Google Gemini", base: "https://generativelanguage.googleapis.com/v1beta/openai", models: ["gemini-3.8-flash", "gemini-3.1-flash-lite"]},
+  qwen: {name: "通义千问（阿里云百炼）", base: "https://dashscope.aliyuncs.com/compatible-mode/v1", models: ["qwen-plus", "qwen-flash"]},
+  custom: {name: "自定义兼容接口", base: "", models: []}
+};
+
+function make(tag, value, className) {
+  const element = document.createElement(tag);
+  if (value != null) element.textContent = value;
+  if (className) element.className = className;
+  return element;
+}
+
+function notice(id, value, kind = "") {
+  const element = $(id);
+  element.textContent = value;
+  element.dataset.kind = kind;
+}
+
+function readStorage(key) {
+  try { return localStorage.getItem(key); }
+  catch { return null; }
+}
+
+function writeStorage(key, value) {
+  try { localStorage.setItem(key, value); return true; }
+  catch { return false; }
+}
+
+function validTranslations(value) {
+  return value && !Array.isArray(value) && typeof value === "object" && Object.entries(value).every(
+    ([code, translation]) => Object.hasOwn(languages, code) && typeof translation === "string" && translation.length <= 4000
+  );
+}
+
+function restoreLibrary(data) {
+  if (![1, 2].includes(data?.version) || !Array.isArray(data.entries) || data.entries.length > maxEntries) {
+    throw new Error("请选择本工具导出的词库备份。词库最多支持 500 条。");
+  }
+  const ids = new Set();
+  for (const entry of data.entries) {
+    if (!entry || typeof entry.id !== "string" || !/^[\w-]{1,64}$/.test(entry.id) || ids.has(entry.id) ||
+        typeof entry.zh !== "string" || !entry.zh.trim() || entry.zh.length > 2000 ||
+        typeof entry.category !== "string" || !entry.category.trim() || entry.category.length > 24 ||
+        !Array.isArray(entry.keywords) || entry.keywords.some(k => typeof k !== "string") ||
+        entry.keywords.join(", ").length > 300 || !validTranslations(entry.translations) ||
+        (data.version === 2 && !validTranslations(entry.literal))) {
+      throw new Error("备份中有无效或重复的话术记录。");
+    }
+    ids.add(entry.id);
+  }
+  if (data.version === 2) return data.entries;
+  const oldById = new Map(legacyBuiltins.map(entry => [entry.id, entry]));
+  const newById = new Map(builtins.map(entry => [entry.id, entry]));
+  const upgraded = data.entries.map(entry => {
+    const old = oldById.get(entry.id);
+    const next = newById.get(entry.id);
+    if (!old || !next || old.zh !== entry.zh) return {...entry, literal: {}};
+    const translations = {};
+    const literal = {};
+    for (const code of Object.keys(languages)) {
+      const previous = entry.translations[code];
+      const unchanged = previous === old.translations[code];
+      translations[code] = unchanged ? next.translations[code] : previous ?? "";
+      if (unchanged) literal[code] = next.literal[code];
+    }
+    return {
+      ...next, translations, literal,
+      category: entry.category === old.category ? next.category : entry.category,
+      keywords: entry.keywords.join("\n") === old.keywords.join("\n") ? next.keywords : entry.keywords
+    };
+  });
+  const additions = builtins.filter(entry => !oldById.has(entry.id) && !ids.has(entry.id));
+  return upgraded.concat(additions.slice(0, maxEntries - upgraded.length));
+}
+
+let entries = builtins;
+let loadError = false;
+try {
+  const stored = readStorage(storageKey) ?? readStorage(legacyStorageKey);
+  if (stored) entries = restoreLibrary(JSON.parse(stored));
+} catch { loadError = true; }
+const savedLanguage = readStorage("cs_lang");
+let language = Object.hasOwn(languages, savedLanguage) ? savedLanguage : "en";
+let serviceAvailable = false;
+let settings = {live: false, mode: "ai", provider: "deepseek", model: "deepseek-flash", base: providers.deepseek.base};
+try {
+  const stored = JSON.parse(readStorage(settingsKey));
+  if (stored && Object.hasOwn(providers, stored.provider) && ["browser", "ai"].includes(stored.mode) &&
+      typeof stored.model === "string" && typeof stored.base === "string") {
+    settings = {live: stored.live === true, mode: stored.mode, provider: stored.provider, model: stored.model, base: stored.base};
+  }
+} catch { /* Use the matching-first defaults. */ }
+let apiKey = "";
+let activeTranslation = null;
+let result = null;
+let editing = null;
+let previousEntries = null;
+
+const languageGroups = [$("language-options"), $("library-languages")];
+for (const group of languageGroups) {
+  for (const [code, name] of Object.entries(languages)) {
+    const button = make("button", name);
+    button.type = "button";
+    button.dataset.language = code;
+    button.addEventListener("click", () => {
+      if (language === code) return;
+      language = code;
+      writeStorage("cs_lang", code);
+      resetTranslation();
+      renderLanguages();
+      renderMatches();
+      renderLibrary();
+    });
+    group.append(button);
+  }
+}
+
+function renderLanguages() {
+  for (const group of languageGroups) {
+    for (const button of group.children) button.setAttribute("aria-pressed", button.dataset.language === language);
+  }
+  $("target-label").textContent = languages[language] + "译文";
+  output.lang = language;
+}
+
+const tabs = [...document.querySelectorAll("[data-panel]")];
+function showPanel(panelId) {
+  for (const button of tabs) {
+    const selected = button.dataset.panel === panelId;
+    button.setAttribute("aria-pressed", selected);
+    $(button.dataset.panel).hidden = !selected;
+  }
+}
+for (const tab of tabs) tab.addEventListener("click", () => showPanel(tab.dataset.panel));
+
+function normalized(text) {
+  return text.normalize("NFKC").toLowerCase().trim().replace(/\s+/gu, " ")
+    .replace(/(?<=\p{Script=Han}) +| +(?=\p{Script=Han})/gu, "").replace(/[。!.]+$/u, "");
+}
+
+function criticalTokens(text) {
+  const clean = text.normalize("NFKC").replace(/[–—−〜～]/gu, "-")
+    .replace(/(\d)\s*(?:到|至|~)\s*(?=\d)/gu, "$1-")
+    .replace(/(\d)\s+(?:to|bis|à|a|до)\s+(?=\d)/giu, "$1-")
+    .replace(/(\d)\s*-\s*(?=\d)/gu, "$1-");
+  return clean.match(/(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*[A-Za-z])(?=[A-Za-z0-9_-]*\d)[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*|(?<!\d)[+-]?\d+(?:[.,:/-]\d+)*(?:%|‰)?/gu) || [];
+}
+
+function tokenKey(text) {
+  return criticalTokens(text).sort().join("\n");
+}
+
+const question = /是否|能否|可否|能不能|会不会|吗|怎么|如何|为什么|\?$/u;
+const topics = [
+  {
+    topic: /退款|退钱|退费|退不了|退还|返款|原路退回|没到账|未到账/u,
+    states: [
+      ["nonautomatic", /不.{0,4}自动退/u],
+      ["missing", /(?:未|没|没有|尚未|还没)(?:收到退款|到账|入账)|退款.{0,5}(?:未|没)收到/u],
+      ["failed", /退款.{0,6}(?:失败|未成功|未能完成|未完成)/u],
+      ["eligibility", /(?:是否|能否|能不能|可否).{0,8}(?:退款|退钱)|(?:可以退款|能退款|可以退).{0,3}(?:吗|\?)|判断退款资格/u],
+      ["question", /(?:了吗|了吗\?|是不是|是否已)|\?$/u],
+      ["declined", /退款.{0,10}(?:未获批准|未批准|被拒|未通过|不通过)/u],
+      ["approved", /退款.{0,10}(?:获批准|已批准|审核通过|申请通过)|同意退款/u],
+      ["review", /退款.{0,10}(?:审核中|正在审核)|(?:审核中|正在审核).{0,8}退款|退款审核/u],
+      ["submitted", /(?:退款申请|申请退款).{0,5}已提交|已.{0,7}提交.{0,10}退款申请/u],
+      ["received", /(?:收到|受理).{0,10}退款申请|退款申请.{0,5}(?:已受理|已收到)/u],
+      ["processing", /退款.{0,8}处理中|(?:正在|还在)处理退款|正在退款/u],
+      ["destination", /原路退回|原付[款费]方式|原支付方式|退到原账户|退款去向/u],
+      ["progress", /查询.{0,6}退款|查退款|退款进度|退款到哪|退款订单号/u],
+      ["question", question],
+      ["credited", /已到账|已入账|到账了|已收到退款/u],
+      ["partial", /部分.{0,5}退款|退款.{0,5}部分|退还部分|退了一部分|部分费用已退/u],
+      ["denied", /(?:不|无法|不能|不给|拒绝|不予|不支持).{0,5}(?:退款|退钱|退费|返款|退还)|退不了|费用不退/u],
+      ["issued", /已.{0,10}(?:退款|退钱|退费)|(?:退款|退钱)(?:了|成功|已处理)/u],
+      ["allowed", /可以.{0,4}退|支持.{0,4}退|能退款|符合退款条件/u]
+    ]
+  },
+  {
+    topic: /续费|续订|续期|自动更新|试用/u,
+    states: [
+      ["trial", /试用/u],
+      ["failed", /续费.{0,10}(?:未成功|失败)|付款未成功/u],
+      ["success", /续费成功|已续费|已续期|已续订|续订成功|已成功续费/u],
+      ["date", /下次续费|续费日期|什么时候续费|续费时间/u],
+      ["charged", /续费.{0,5}(?:扣费|扣款|收费|账单)|(?:扣费|这笔).{0,10}续费/u],
+      ["disabled", /已.{0,7}(?:关闭|停止|取消|停用).{0,5}(?:续费|续订)|续费已关闭|关闭续费成功/u],
+      ["disable-guide", /(?:关闭|停止|取消|停用).{0,5}(?:续费|续订)|(?:续费|续订).{0,5}(?:关闭|停止)/u],
+      ["question", question],
+      ["nonrenewing", /不.{0,5}(?:续费|续订|自动更新)/u],
+      ["renewing", /自动续费|自动续订/u]
+    ]
+  },
+  {
+    topic: /取消|解约|退订|解订/u,
+    states: [
+      ["blocked", /(?:不要|别|无需|不用|不能|无法).{0,5}(?:取消|解约|退订)/u],
+      ["renewal", /(?:关闭|停止|取消|停用).{0,5}(?:续费|续订)/u],
+      ["charge-after", /(?:取消|解约|退订).{0,16}(?:扣费|扣款)/u],
+      ["refund-after", /(?:取消|解约|退订).{0,16}(?:退款|退还|费用)/u],
+      ["access-after", /(?:取消|解约|退订).{0,16}(?:还能用|使用|有效|权益)/u],
+      ["processing", /(?:取消|解约|退订).{0,14}(?:处理中|还在处理|尚未完成)/u],
+      ["received", /(?:收到|受理).{0,10}(?:取消|解约|退订)|(?:取消|解约|退订).{0,8}(?:请求|申请)已收到/u],
+      ["question", /是否|能否|能不能|可否/u],
+      ["done", /已.{0,8}(?:取消|解约|退订)|取消了|取消成功|解约了/u],
+      ["guide", /取消|解约|退订/u]
+    ]
+  }
+];
+
+function topicState(text, {topic, states}) {
+  if (!topic.test(text)) return "";
+  return states.find(([, pattern]) => pattern.test(text))?.[0] || "other";
+}
+
+function hasConflict(query, phrase) {
+  if (tokenKey(query) !== tokenKey(phrase)) return true;
+  const cadence = /每(?:隔)?(?:天|日|周|星期|月|季度|季|年)|按(?:天|日|周|月|季|年)/gu;
+  if ((query.match(cadence) || []).join() !== (phrase.match(cadence) || []).join()) return true;
+  let classified = false;
+  for (const topic of topics) {
+    const left = topicState(query, topic);
+    const right = topicState(phrase, topic);
+    if (left && right && left !== right) return true;
+    if (left && left === right && left !== "other") classified = true;
+  }
+  if (classified) return false;
+  const negative = /不要|不想|不需要|别[发提供清重取退]|无需|不用|不能|无法|未能|不会|不可以|不予|没[有收到发取消]|退不了/u;
+  return negative.test(query) !== negative.test(phrase);
+}
+
+function ngrams(text) {
+  const letters = [...text];
+  return new Set(letters.slice(0, -1).map((letter, i) => letter + letters[i + 1]));
+}
+
+function similarity(left, right) {
+  if (left.length < 2 || right.length < 2) return 0;
+  const ratio = Math.min(left.length, right.length) / Math.max(left.length, right.length);
+  if (left.includes(right) || right.includes(left)) return 0.60 + 0.26 * ratio;
+  const a = ngrams(left);
+  const b = ngrams(right);
+  const common = [...a].filter(value => b.has(value)).length;
+  return a.size + b.size ? 2 * common / (a.size + b.size) : 0;
+}
+
+function rank(query, library) {
+  const text = normalized(query);
+  if (!text) return [];
+  const input = text.replace(/^(?:麻烦您|麻烦你|请问|请您|请|帮我)/u, "").replace(/(?:一下|吧|呢)$/u, "");
+  const hits = [];
+  for (const entry of library) {
+    const phrase = normalized(entry.zh);
+    if (text === phrase && tokenKey(query) === tokenKey(entry.zh)) {
+      hits.push({entry, score: 1});
+      continue;
+    }
+    if (hasConflict(text, phrase)) continue;
+    const comparison = [similarity(text, phrase), similarity(input, phrase)];
+    for (const keyword of entry.keywords) {
+      const key = normalized(keyword);
+      if (key.length > 1 && (text.includes(key) || input === key)) {
+        comparison.push(input === key ? 0.91 : 0.63 + 0.22 * key.length / text.length);
+      }
+    }
+    const score = Math.max(...comparison);
+    if (score >= 0.53) hits.push({entry, score});
+  }
+  return hits.sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
+async function copy(value, status) {
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+    await navigator.clipboard.writeText(value);
+    status("已复制。");
+    return true;
+  } catch {
+    const focused = document.activeElement;
+    const field = make("textarea");
+    field.value = value;
+    field.setAttribute("readonly", "");
+    field.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.append(field);
+    field.select();
+    let copied = false;
+    try { copied = document.execCommand("copy") === true; }
+    catch { /* Use the visible copy status. */ }
+    finally { field.remove(); focused?.focus(); }
+    status(copied ? "已复制。" : "复制失败，请选中文字后手动复制。", copied ? "" : "error");
+    return copied;
+  }
+}
+
+function action(label, run, extraClass = "") {
+  const button = make("button", label, "btn " + extraClass);
+  button.type = "button";
+  button.addEventListener("click", run);
+  return button;
+}
+
+function setSource(value) {
+  source.value = value;
+  showPanel("translate-panel");
+  onSourceChange();
+  source.focus();
+}
+
+function phraseCard(entry, reference) {
+  const card = make("article", null, "card phrase-card");
+  const tags = make("div", null, "tags");
+  tags.append(make("span", entry.category, "tag"));
+  if (reference) tags.append(make("span", reference, "tag reference"));
+  const chinese = make("h3", entry.zh);
+  const translation = entry.translations[language];
+  const foreign = make("p", translation || "这条话术还未填写" + languages[language] + "译文。", translation ? "foreign" : "foreign quiet");
+  if (translation) {
+    const translated = make("span", translation);
+    translated.lang = language;
+    const literal = entry.literal[language];
+    foreign.replaceChildren(translated, make("small", "（" + (literal || "中文直译待补充") + "）", "literal"));
+  }
+  const buttons = make("div", null, "actions");
+  const status = make("p", null, "notice");
+  status.setAttribute("role", "status");
+  buttons.append(action(reference ? "用这句作原文" : "带入翻译", () => setSource(entry.zh)));
+  if (translation) buttons.append(action(reference === "模糊匹配" ? "复制参考译文" : "复制译文", () =>
+    copy(translation, (message, kind) => { status.textContent = message; status.dataset.kind = kind || ""; })));
+  if (!reference) {
+    buttons.append(action("编辑", () => openEditor(entry)), action("删除", () => removeEntry(entry), "danger"));
+  }
+  card.append(tags, chinese, foreign, buttons, status);
+  return card;
+}
+
+function renderMatches() {
+  const area = $("matches");
+  const text = source.value.trim();
+  area.replaceChildren();
+  area.className = "";
+  if (!text) {
+    const examples = make("div", null, "examples");
+    for (const example of ["退款审核中", "已退款", "关闭自动续费", "重复扣费"]) {
+      examples.append(action(example, () => setSource(example)));
+    }
+    area.append(make("p", "输入原句或关键词，也可以试试这些常见场景。", "empty"), examples);
+    return;
+  }
+  const matches = rank(text, entries);
+  if (!matches.length) {
+    area.append(make("p", settings.live ? "没有合适的常用语。可以使用实时翻译。" : "没有合适的常用语。试试更短的关键词，或在词库新增话术。", "empty"));
+    return;
+  }
+  area.className = "reference-grid";
+  area.append(...matches.map(hit => phraseCard(hit.entry, hit.score === 1 ? "原句匹配" : "模糊匹配")));
+}
+
+function renderLibrary() {
+  const category = $("category");
+  const selected = category.value;
+  const categories = [...new Set(entries.map(entry => entry.category))];
+  category.replaceChildren(new Option("全部分类", ""), ...categories.map(name => new Option(name, name)));
+  category.value = categories.includes(selected) ? selected : "";
+  $("category-options").replaceChildren(...categories.map(name => new Option(name, name)));
+  const search = normalized($("search").value);
+  const rows = entries.filter(entry => (!category.value || entry.category === category.value) &&
+    (!search || [entry.zh, entry.category, ...entry.keywords, ...Object.values(entry.translations), ...Object.values(entry.literal)]
+      .some(value => normalized(value).includes(search))));
+  $("library-count").textContent = "显示 " + rows.length + " / " + entries.length + " 条";
+  $("library-list").replaceChildren(...(rows.length ? rows.map(entry => phraseCard(entry)) :
+    [make("p", "没有找到符合条件的话术。", "empty")]));
+}
+
+function updateLibrary(next, message) {
+  previousEntries = entries;
+  entries = next;
+  const persisted = writeStorage(storageKey, JSON.stringify({version: 2, entries}));
+  notice("libraryMessage", persisted ? message : message + " 浏览器存储不可用，本次修改仅在当前页面保留。", persisted ? "" : "warning");
+  $("undo").hidden = false;
+  renderLibrary();
+  renderMatches();
+}
+
+function removeEntry(entry) {
+  updateLibrary(entries.filter(item => item.id !== entry.id), "已删除话术，可撤销。");
+  $("undo").focus();
+}
+
+for (const [code, name] of Object.entries(languages)) {
+  $("editor-language").add(new Option(name, code));
+  const group = make("div", null, "entry-fields");
+  group.dataset.code = code;
+  const label = make("label", name + "译文", "field");
+  const area = make("textarea");
+  area.id = "entry-" + code;
+  area.rows = 2;
+  area.maxLength = 4000;
+  area.lang = code;
+  label.append(area);
+  const glossLabel = make("label", "中文直译", "field");
+  const gloss = make("textarea");
+  gloss.id = "entry-literal-" + code;
+  gloss.rows = 2;
+  gloss.maxLength = 4000;
+  glossLabel.append(gloss);
+  group.append(label, glossLabel);
+  $("entry-translations").append(group);
+}
+
+function showEditorLanguage() {
+  for (const group of $("entry-translations").children) group.hidden = group.dataset.code !== $("editor-language").value;
+}
+$("editor-language").addEventListener("change", showEditorLanguage);
+
+function openEditor(entry = null, translation = null) {
+  editing = entry;
+  $("editor-title").textContent = entry ? "编辑话术" : "新增话术";
+  $("entry-source").value = entry?.zh ?? translation?.source ?? "";
+  $("entry-category").value = entry?.category ?? "";
+  $("entry-keywords").value = entry?.keywords.join(", ") ?? "";
+  for (const code of Object.keys(languages)) {
+    $("entry-" + code).value = entry?.translations[code] ?? (translation?.language === code ? translation.text : "");
+    $("entry-literal-" + code).value = entry?.literal[code] ?? "";
+  }
+  $("editor-language").value = language;
+  showEditorLanguage();
+  notice("editor-status", "");
+  $("editor").showModal();
+  $("entry-source").focus();
+}
+
+$("add").addEventListener("click", () => openEditor());
+$("cancel-editor").addEventListener("click", () => $("editor").close());
+$("editor-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const zh = $("entry-source").value.trim();
+  if (!zh) return notice("editor-status", "请输入中文原文。", "error");
+  if (!editing && entries.length >= maxEntries) return notice("editor-status", "词库已达到 500 条。", "error");
+  if (entries.some(entry => entry.id !== editing?.id && normalized(entry.zh) === normalized(zh))) {
+    return notice("editor-status", "词库里已有相同的原句，请编辑已有话术。", "error");
+  }
+  if (editing && !entries.some(entry => entry.id === editing.id)) {
+    return notice("editor-status", "此条话术已在其他页面删除，请关闭后重新新增。", "error");
+  }
+  const keywords = [...new Set($("entry-keywords").value.split(/[,，、;；]+/u).map(word => word.trim()).filter(Boolean))];
+  if (keywords.join(", ").length > 300) return notice("editor-status", "关键词太长，请缩短后保存。", "error");
+  const translations = Object.fromEntries(Object.keys(languages).map(code => [code, $("entry-" + code).value.trim()]));
+  const literal = Object.fromEntries(Object.keys(languages).map(code => [code, $("entry-literal-" + code).value.trim()]));
+  if ([...Object.values(translations), ...Object.values(literal)].some(value => value.length > 4000)) {
+    return notice("editor-status", "每种语言的译文及中文直译各限 4000 字。", "error");
+  }
+  const entry = {
+    id: editing?.id ?? "user-" + [...crypto.getRandomValues(new Uint32Array(4))].map(n => n.toString(16).padStart(8, "0")).join(""),
+    zh,
+    category: $("entry-category").value.trim() || "自定义",
+    keywords,
+    translations,
+    literal
+  };
+  updateLibrary(editing ? entries.map(item => item.id === entry.id ? entry : item) : [entry, ...entries], "已保存话术。");
+  $("editor").close();
+  if ($("library-panel").hidden) notice("copy-status", "已保存到常用语词库。");
+});
+$("search").addEventListener("input", renderLibrary);
+$("category").addEventListener("change", renderLibrary);
+
+$("undo").addEventListener("click", () => {
+  if (!previousEntries) return;
+  entries = previousEntries;
+  previousEntries = null;
+  const persisted = writeStorage(storageKey, JSON.stringify({version: 2, entries}));
+  $("undo").hidden = true;
+  notice("libraryMessage", persisted ? "已撤销上一次词库更改。" : "当前页面已撤销更改，浏览器未能保存。", persisted ? "" : "warning");
+  renderLibrary();
+  renderMatches();
+});
+
+$("export").addEventListener("click", () => {
+  const data = JSON.stringify({version: 2, entries}, null, 2);
+  const url = URL.createObjectURL(new Blob([data], {type: "application/json"}));
+  const link = make("a");
+  link.href = url;
+  link.download = "客服常用语词库.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  notice("libraryMessage", "已生成词库备份。");
+});
+$("import").addEventListener("click", () => $("import-file").click());
+$("import-file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    if (file.size > 45_000_000) throw new Error("备份文件过大。");
+    const next = restoreLibrary(JSON.parse(await file.text()));
+    updateLibrary(next, "已用备份恢复 " + next.length + " 条话术，可撤销。");
+  } catch (error) {
+    notice("libraryMessage", error instanceof SyntaxError ? "无法读取此 JSON 备份文件。" : error.message, "error");
+  }
+});
+window.addEventListener("storage", event => {
+  if (event.key !== storageKey) return;
+  try {
+    entries = event.newValue === null ? builtins : restoreLibrary(JSON.parse(event.newValue));
+    previousEntries = null;
+    $("undo").hidden = true;
+    notice("libraryMessage", "已同步其他页面的词库更改。");
+    renderLibrary();
+    renderMatches();
+  } catch {
+    notice("libraryMessage", "其他页面的词库更改无法读取。", "error");
+  }
+});
+
+const politePhrases = new Map([
+  ["等一下", "请您稍候片刻"], ["稍等", "请您稍候片刻"],
+  ["稍等一下", "请您稍候片刻"], ["请稍等", "请您稍候片刻"],
+  ["你什么问题", "请问您遇到了什么问题"], ["你听懂了吗", "请问我刚才解释清楚了吗"],
+  ["你错了", "这里可能有些误会"], ["不行", "很抱歉，这项请求无法办理"],
+  ["请冷静", "我理解您现在的感受，我们可以一步一步来"], ["退不了款", "很抱歉，这笔款项无法退款"]
+]);
+const courteousWait = {
+  en: "Could you give me a moment, please?",
+  ja: "少々お待ちいただけますか。",
+  ko: "잠시만 기다려 주시겠어요?",
+  es: "¿Podría esperar un momento, por favor?",
+  pt: "Poderia aguardar um momento, por favor?",
+  de: "Könnten Sie bitte einen Moment warten?",
+  fr: "Pourriez-vous patienter un instant, s’il vous plaît ?",
+  it: "Potrebbe attendere un momento, per favore?",
+  ru: "Пожалуйста, подождите немного."
+};
+
+function politeSource(text) {
+  return text.split(/([。！？!?\n]+)/u).map((segment, index) => {
+    if (index % 2 || !segment.trim()) return segment;
+    const plain = segment.trim();
+    if (politePhrases.has(plain)) return politePhrases.get(plain);
+    if (/^请(?=确认|核对|提供|发送)/u.test(plain)) return "麻烦您" + plain.slice(1);
+    if (/^(?:稍等|发(?:一下)?截图|给我发|给我提供|把.{1,60}(?:发|给)我|重启(?:一下)?(?:App|应用|设备)|告诉我)/iu.test(plain)) {
+      return "麻烦您" + plain.replace(/^(?:给我发|给我提供)/u, verb => verb.slice(2));
+    }
+    return segment;
+  }).join("");
+}
+
+function resetTranslation() {
+  if (activeTranslation) activeTranslation.abort();
+  activeTranslation = null;
+  result = null;
+  output.textContent = "";
+  $("engine-label").textContent = "";
+  $("output-card").setAttribute("aria-busy", "false");
+  $("copy-result").disabled = true;
+  $("save-result").disabled = true;
+  $("translate-button").disabled = false;
+  $("translate-button").textContent = "实时翻译";
+  notice("translate-status", "");
+  notice("copy-status", "");
+}
+
+function onSourceChange() {
+  $("char-count").textContent = source.value.length + " / 2000";
+  resetTranslation();
+  renderMatches();
+}
+source.addEventListener("input", onSourceChange);
+source.addEventListener("keydown", event => {
+  if (settings.live && !event.isComposing && event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault();
+    if (!activeTranslation) $("translate-form").requestSubmit();
+  }
+});
+$("clear-source").addEventListener("click", () => setSource(""));
+function renderWorkspace() {
+  $("translate-form").classList.toggle("match-only", !settings.live);
+  for (const id of ["translate-button", "copy-prompt", "output-card", "serviceNote"]) $(id).hidden = !settings.live;
+  if (!settings.live) return;
+  if (settings.mode === "browser") {
+    const supported = "Translator" in globalThis;
+    notice("serviceNote", supported ? "浏览器本地翻译 · 首次使用某些语言时可能需要下载语言包。" :
+      "当前浏览器不支持本地翻译，可继续匹配常用语，或在设置中切换到 API 客服翻译。", supported ? "" : "warning");
+  } else {
+    const ready = serviceAvailable && apiKey;
+    notice("serviceNote", ready ? providers[settings.provider].name + " · " + settings.model + "。点击实时翻译会向该服务发送原文。" :
+      "API 客服翻译尚未就绪。请通过启动脚本打开页面，并在设置中填写密钥。", ready ? "" : "warning");
+  }
+}
+
+for (const [id, provider] of Object.entries(providers)) $("settings-provider").add(new Option(provider.name, id));
+
+function renderModelChoices(provider, model) {
+  const select = $("settings-model");
+  select.replaceChildren(...providers[provider].models.map(name => new Option(name, name)),
+    new Option("输入其他模型 ID", "__custom__"));
+  select.value = providers[provider].models.includes(model) ? model : "__custom__";
+  $("settings-model-custom").value = select.value === "__custom__" ? model : "";
+  $("custom-model-row").hidden = select.value !== "__custom__";
+}
+
+function renderSettingsMode() {
+  const api = $("settings-mode").value === "ai";
+  $("settings-api").hidden = !api;
+  $("test-api").hidden = !api;
+  notice("settings-mode-note", api ? "通过本机服务调用所选模型生成客服译文。" :
+    "由桌面浏览器本地翻译。常用语匹配始终可用。");
+}
+
+function loadSettingsForm() {
+  $("settings-live").checked = settings.live;
+  $("settings-mode").value = settings.mode;
+  $("settings-provider").value = settings.provider;
+  renderModelChoices(settings.provider, settings.model);
+  $("settings-base").value = settings.base;
+  $("settings-key").value = apiKey;
+  renderSettingsMode();
+}
+
+$("settings-mode").addEventListener("change", renderSettingsMode);
+$("settings-provider").addEventListener("change", () => {
+  const provider = $("settings-provider").value;
+  renderModelChoices(provider, providers[provider].models[0] || "");
+  $("settings-base").value = providers[provider].base;
+  $("settings-key").value = "";
+  notice("settings-status", "");
+});
+$("settings-model").addEventListener("change", () => {
+  $("custom-model-row").hidden = $("settings-model").value !== "__custom__";
+});
+$("settings-base").addEventListener("input", () => {
+  if ($("settings-key").value === apiKey) $("settings-key").value = "";
+});
+
+function settingsDraft() {
+  const draft = {
+    live: $("settings-live").checked,
+    mode: $("settings-mode").value,
+    provider: $("settings-provider").value,
+    model: $("settings-model").value === "__custom__" ? $("settings-model-custom").value.trim() : $("settings-model").value,
+    base: $("settings-base").value.trim().replace(/\/+$/u, "")
+  };
+  if (draft.mode === "ai") {
+    if (!draft.model) throw new Error("请选择模型，或填写自定义模型 ID。");
+    let url;
+    try { url = new URL(draft.base); } catch { throw new Error("请填写有效的 API 基址。"); }
+    const loopback = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
+    if ((url.protocol !== "https:" && !(loopback && url.protocol === "http:")) ||
+        url.username || url.password || url.search || url.hash) {
+      throw new Error("API 基址应为 HTTPS 地址，或本机 HTTP 地址。");
+    }
+  }
+  return draft;
+}
+
+$("settings-form").addEventListener("submit", event => {
+  event.preventDefault();
+  try {
+    settings = settingsDraft();
+    apiKey = $("settings-key").value.trim();
+    const saved = writeStorage(settingsKey, JSON.stringify(settings));
+    resetTranslation();
+    renderWorkspace();
+    renderMatches();
+    notice("settings-status", saved ? "设置已保存。" : "设置已应用到当前页面，浏览器未能保存。", saved ? "" : "warning");
+  } catch (error) {
+    notice("settings-status", error.message, "error");
+  }
+});
+
+async function detectService() {
+  if (location.protocol !== "file:") {
+    try {
+      const reply = await fetch("/api/status", {cache: "no-store", signal: AbortSignal.timeout(3500)});
+      if (reply.ok) serviceAvailable = (await reply.json()).version === 4;
+    } catch { /* Matching works without the local service. */ }
+  }
+  notice("settings-service", serviceAvailable ? "本机 API 服务已启动。" :
+    "使用 API 时，请从 Windows 启动脚本（或 Mac 启动脚本）打开网页。", serviceAvailable ? "" : "warning");
+  renderWorkspace();
+}
+
+$("test-api").addEventListener("click", async () => {
+  const button = $("test-api");
+  try {
+    const draft = settingsDraft();
+    const key = $("settings-key").value.trim();
+    button.disabled = true;
+    notice("settings-status", "正在测试所选模型…");
+    await aiTranslation("您好，请稍等片刻。", "en", {provider: draft.provider, model: draft.model, base: draft.base, key}, AbortSignal.timeout(45_000));
+    notice("settings-status", "连接成功。点「保存设置」应用。");
+  } catch (error) {
+    notice("settings-status", error.message || "连接失败，请核对配置。", "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+async function browserTranslation(text, code, controller) {
+  if (!("Translator" in globalThis)) {
+    throw new Error("此浏览器未提供本地翻译。请用桌面版 Chrome，或配置 AI 客服翻译。");
+  }
+  const waitOpening = /^(?:等一下|(?:请(?:您)?)?稍等(?:一下|片刻)?)(?:[。！？!?]\s*|\n+\s*|$)/u.exec(text);
+  const remaining = waitOpening ? text.slice(waitOpening[0].length) : text;
+  if (!remaining) return courteousWait[code];
+  const options = {sourceLanguage: "zh", targetLanguage: code, signal: controller.signal};
+  let translator;
+  try {
+    translator = await Translator.create({
+      ...options,
+      monitor(monitor) {
+        monitor.addEventListener("downloadprogress", event => {
+          if (activeTranslation !== controller) return;
+          const percent = Math.round(event.loaded * 100);
+          notice("translate-status", percent >= 100 ? "语言包已就绪，正在翻译…" : "正在下载语言包 " + percent + "%…");
+        });
+      }
+    });
+    const translated = await translator.translate(politeSource(remaining), {signal: controller.signal});
+    if (!waitOpening || !translated.trim()) return translated;
+    const separator = waitOpening[0].includes("\n") ? "\n" : " ";
+    return courteousWait[code] + separator + translated.trim();
+  } catch (error) {
+    if (controller.signal.aborted) throw error;
+    throw new Error("本地语言包无法使用。请确认 Chrome 可以联网下载语言包，再点击翻译重试，或切换到 AI 客服翻译。");
+  } finally {
+    translator?.destroy?.();
+  }
+}
+
+async function aiTranslation(text, code, api, signal) {
+  if (!serviceAvailable) throw new Error("请先用启动脚本打开本机 API 服务。");
+  if (!api.key) throw new Error("请在设置中填写 API 密钥。");
+  let response;
+  try {
+    response = await fetch("/api/translate", {
+      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text, target: code, api}), signal
+    });
+  } catch (error) {
+    if (signal.aborted) throw error;
+    throw new Error("连接不到本地翻译服务，请确认启动窗口还开着。");
+  }
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || "AI 翻译服务暂时不可用。");
+  if (typeof payload.translation !== "string" || !payload.translation.trim()) throw new Error("API 服务未返回有效译文。");
+  return payload.translation;
+}
+
+$("translate-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!settings.live || activeTranslation) return;
+  const text = source.value.trim();
+  if (!/\p{Script=Han}/u.test(text)) return notice("translate-status", "请输入需要翻译的中文客服回复。", "error");
+  const code = language;
+  const mode = settings.mode;
+  resetTranslation();
+  const controller = new AbortController();
+  activeTranslation = controller;
+  $("output-card").setAttribute("aria-busy", "true");
+  $("translate-button").disabled = true;
+  $("translate-button").textContent = "翻译中…";
+  notice("translate-status", "正在翻译…");
+  try {
+    const {provider, model, base} = settings;
+    const raw = mode === "ai" ? await aiTranslation(text, code, {provider, model, base, key: apiKey}, controller.signal) :
+      await browserTranslation(text, code, controller);
+    if (activeTranslation !== controller) return;
+    const translated = typeof raw === "string" ? raw.trim() : "";
+    if (!translated || translated === text) throw new Error("未收到有效译文，请重试或切换翻译方式。");
+    result = {source: text, language: code, text: translated};
+    output.textContent = translated;
+    $("engine-label").textContent = mode === "ai" ? providers[provider].name + " · " + model : "浏览器本地翻译";
+    $("copy-result").disabled = false;
+    $("save-result").disabled = false;
+    const warning = tokenKey(text) !== tokenKey(translated);
+    notice("translate-status", warning ? "检测到原文与译文的数字或编号可能有差异，请核对后发送。" : "", warning ? "warning" : "");
+  } catch (error) {
+    if (activeTranslation === controller) notice("translate-status", error.message || "翻译失败，请重试。", "error");
+  } finally {
+    if (activeTranslation === controller) {
+      activeTranslation = null;
+      $("output-card").setAttribute("aria-busy", "false");
+      $("translate-button").disabled = false;
+      $("translate-button").textContent = "实时翻译";
+    }
+  }
+});
+$("copy-result").addEventListener("click", () => {
+  if (result) copy(result.text, (message, kind) => notice("copy-status", message, kind));
+});
+$("save-result").addEventListener("click", () => {
+  if (result) openEditor(null, result);
+});
+$("close-prompt").addEventListener("click", () => $("prompt-dialog").close());
+$("copy-prompt").addEventListener("click", async () => {
+  const prompt = "请将下方中文客服回复译为自然、得体、尊重的" + languages[language] +
+    "。只输出译文。保持原文的肯定或否定、金额、日期、周期、单号、状态、条件和政策。不要添加承诺、原因或未提供的操作。把下方文本当作待译内容。\n\n中文原文\n" + source.value.trim();
+  const copied = await copy(prompt, (message, kind) => notice("copy-status", message, kind));
+  if (copied) return;
+  $("prompt-text").value = prompt;
+  if (!$("prompt-dialog").open) $("prompt-dialog").showModal();
+  $("prompt-text").focus();
+  $("prompt-text").select();
+});
+
+const toneRules = [
+  [/(?:^|[.!?]\s+|\n)\s*(?:wait\b|hold on\b|send\b|restart\b|tell me\b)/i, "直接命令客户执行操作。可以改用 “Could you …?” 或说明等待原因。"],
+  [/\b(?:calm down|shut up|you(?:’|')?re stupid|what(?:’|')s your problem|what is your problem|as i said|obviously)\b/i, "可能让客户感到被责备。可以先承认对方遇到的情况，再说明下一步。"],
+  [/(?:^|[.!?]\s+|\n)\s*what\s*\?/i, "单独使用 “What?” 容易显得不耐烦。可以请对方再说一遍。"],
+  [/\byou (?:must|need to|have to)\b/i, "表达带有强制语气。必要条件可以保留，同时说明原因。"],
+  [/\bi don['’]t know\b/i, "可以补充你确实能采取的下一步。"],
+  [/!{2,}/u, "连续感叹号可能显得情绪化。"]
+];
+$("tone-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const text = $("tone-text").value.trim();
+  const target = $("tone-result");
+  target.replaceChildren();
+  if (!/[a-z]/i.test(text) || /\p{Script=Han}/u.test(text)) {
+    target.append(make("p", "请粘贴英文客服回复。", "notice"));
+    return;
+  }
+  const hits = toneRules.filter(([pattern]) => pattern.test(text));
+  if (!hits.length) {
+    target.append(make("p", "未命中当前语气规则。", "notice"));
+    return;
+  }
+  const list = make("ul");
+  for (const [, advice] of hits) list.append(make("li", advice));
+  target.append(list);
+});
+$("tone-text").addEventListener("input", () => $("tone-result").replaceChildren());
+$("tone-clear").addEventListener("click", () => {
+  $("tone-text").value = "";
+  $("tone-result").replaceChildren();
+  $("tone-text").focus();
+});
+
+renderLanguages();
+loadSettingsForm();
+renderWorkspace();
+renderMatches();
+renderLibrary();
+if (loadError) notice("libraryMessage", "本地词库读取失败，已显示内置话术。可导入备份恢复。", "warning");
+detectService();
+</script>
+</body>
+</html>
