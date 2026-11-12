@@ -60,6 +60,7 @@ button.danger{color:var(--error)}
 .notice[data-kind=warning]{color:var(--warn)}
 #serviceNote{margin:0 0 13px}
 .section{margin-top:26px}
+#match-summary:not(:empty){margin:0 0 10px}
 .reference-grid,.library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .phrase-card{display:flex;flex-direction:column;gap:7px;min-width:0}
@@ -89,7 +90,10 @@ dialog::backdrop{background:#0b292678}
 .field{display:grid;gap:4px;min-width:0;font-size:13px;font-weight:600}
 .span{grid-column:1/-1}
 .dialog-actions{justify-content:flex-end}
-#settings-form{max-width:780px}
+#settings-form,#custom-language-form{max-width:780px}
+#custom-language-form{margin-bottom:16px}
+.custom-language-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0}
+#custom-language-list{list-style:none;padding:0;margin:10px 0 0}
 .settings-group{border:0;border-top:1px solid var(--line);padding:15px 0 0;margin:17px 0 0;min-width:0}
 .setting-toggle{display:flex;align-items:center;gap:10px;font-weight:650}
 .setting-toggle input{min-height:0;width:17px;height:17px;accent-color:var(--brand)}
@@ -106,7 +110,7 @@ dialog::backdrop{background:#0b292678}
 <body>
 <header>
   <div class="wrap header-inner">
-    <div><h1>客服语气翻译器</h1><p>常用语匹配 · 九种输出语言</p></div>
+    <div><h1>客服语气翻译器</h1><p>常用语匹配与多语种客服翻译</p></div>
   </div>
 </header>
 <main class="wrap">
@@ -144,6 +148,7 @@ dialog::backdrop{background:#0b292678}
     </form>
     <div class="section">
       <div class="section-head"><h2>匹配结果</h2><span class="quiet">括号内是中文直译，复制只取外文。</span></div>
+      <p id="match-summary" class="quiet" role="status"></p>
       <div id="matches"></div>
     </div>
   </section>
@@ -152,11 +157,15 @@ dialog::backdrop{background:#0b292678}
       <h2 id="library-title">常用语词库</h2>
       <div class="actions">
         <button class="btn primary" id="add" type="button">新增话术</button>
+        <button class="btn" id="export-excel" type="button">导出 Excel</button>
+        <button class="btn" id="import-excel" type="button">导入 Excel</button>
         <button class="btn" id="export" type="button">导出备份</button>
         <button class="btn" id="import" type="button">导入备份</button>
+        <input id="import-excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
         <input id="import-file" type="file" accept=".json,application/json" hidden>
       </div>
     </div>
+    <p class="quiet library-count">导出后可用 Excel 批量编辑。重新导入会合并表中的记录，填写规则见工作簿的「填写说明」。</p>
     <div class="library-language"><p class="small-label" id="library-language-label">显示语言</p><div class="language-options" id="library-languages" role="group" aria-labelledby="library-language-label"></div></div>
     <div class="library-toolbar">
       <input type="search" id="search" placeholder="搜索中文、关键词或译文" aria-label="搜索话术">
@@ -179,8 +188,26 @@ dialog::backdrop{background:#0b292678}
     </div>
   </section>
   <section id="settings-panel" aria-labelledby="settings-title" hidden>
+    <div class="section-head">
+      <h2 id="settings-title">设置</h2>
+      <a href="使用手册.pdf" target="_blank" rel="noopener">打开使用手册（PDF）</a>
+    </div>
+    <form id="custom-language-form" class="card" aria-labelledby="custom-language-title">
+      <h3 id="custom-language-title">自定义语种</h3>
+      <div class="form-grid settings-grid">
+        <label class="field">显示名称<input id="custom-language-name" maxlength="24" placeholder="例如泰语" required></label>
+        <label class="field">语言代码<input id="custom-language-code" maxlength="35" placeholder="例如 th、vi、en-GB" spellcheck="false" required></label>
+        <label class="field span">API 翻译要求（选填）<input id="custom-language-guide" maxlength="120" placeholder="例如使用泰国客服敬语"></label>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="custom-language-save" type="submit">添加语种</button>
+        <button class="btn" id="custom-language-cancel" type="button" hidden>取消编辑</button>
+      </div>
+      <p id="custom-language-status" class="notice" role="status"></p>
+      <ul id="custom-language-list" hidden></ul>
+    </form>
     <form id="settings-form" class="card">
-      <div class="section-head"><h2 id="settings-title">设置</h2><a href="使用手册.pdf" target="_blank" rel="noopener">打开使用手册（PDF）</a></div>
+      <div class="section-head"><h3>实时翻译</h3></div>
       <label class="setting-toggle"><input type="checkbox" id="settings-live">显示实时翻译</label>
       <p class="quiet settings-help">关闭时，工作页只显示常用语匹配。匹配不需要联网。</p>
       <div class="settings-group">

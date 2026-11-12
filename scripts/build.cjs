@@ -25,8 +25,12 @@ const seed = JSON.stringify(rows, null, 2).replace(/</g, "\\u003c");
 const legacy = readSource("legacy.json");
 const script = readSource("app.js");
 const shell = readSource("shell.html");
-const scripts = '<script id="builtin-data" type="application/json">\n' + seed + '\n</script>\n' +
+const xlsx = fs.readFileSync(path.join(root, "vendor", "sheetjs", "xlsx.mini.min.js"), "utf8");
+assert.ok(!/<\/script/i.test(xlsx), "SheetJS script cannot be inlined as-is");
+const scripts = '<script>\n' + xlsx + '\n</script>\n' +
+  '<script id="builtin-data" type="application/json">\n' + seed + '\n</script>\n' +
   '<script id="legacy-data" type="application/json">\n' + legacy + '\n</script>\n' +
+  '<script>\n' + readSource("workbook.js") + '</script>\n' +
   '<script>\n' + script + '</script>\n';
 fs.writeFileSync(path.join(root, "客服语气翻译器.html"), shell.replace("</body>", () => scripts + "</body>"));
 console.log(rows.length + " phrases × " + codes.length + " languages, with corresponding Chinese glosses");

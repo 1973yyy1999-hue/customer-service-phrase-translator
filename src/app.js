@@ -1,9 +1,9 @@
 "use strict";
 
-const languages = { en: "英语", ja: "日语", ko: "韩语", es: "西班牙语", pt: "葡萄牙语", de: "德语", fr: "法语", it: "意大利语", ru: "俄语" };
+const builtinLanguages = { en: "英语", ja: "日语", ko: "韩语", es: "西班牙语", pt: "葡萄牙语", de: "德语", fr: "法语", it: "意大利语", ru: "俄语" };
 const maxEntries = 500;
-const storageKey = "cs_translator_library_v4";
-const legacyStorageKey = "cs_translator_library_v3";
+const storageKey = "cs_translator_library_v5";
+const legacyStorageKeys = ["cs_translator_library_v4", "cs_translator_library_v3"];
 const settingsKey = "cs_translator_settings_v4";
 const $ = (id) => document.getElementById(id);
 const source = $("source");
@@ -41,29 +41,65 @@ function writeStorage(key, value) {
   catch { return false; }
 }
 
-function validTranslations(value) {
+function languageCode(value) {
+  if (typeof value !== "string" || !/^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(value.trim()) || value.trim().length > 35) {
+    throw new Error("语言代码请使用 th、vi 或 en-GB 这样的国际语言代码。");
+  }
+  try { return Intl.getCanonicalLocales(value.trim())[0].toLowerCase(); }
+  catch { throw new Error("语言代码无效，请检查代码和地区写法。"); }
+}
+
+function customLanguage(value) {
+  const code = languageCode(value?.code);
+  if (Object.hasOwn(builtinLanguages, code)) throw new Error("「" + code + "」已经是内置语种。");
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const guide = typeof value.guide === "string" ? value.guide.trim() : "";
+  if (!name || name.length > 24 || /[\r\n]/u.test(name)) throw new Error("请输入 1–24 字的语种显示名称。");
+  if (guide.length > 120 || /[\r\n]/u.test(guide)) throw new Error("API 翻译要求最多填写 120 字，且应为一行。");
+  return {code, name, guide};
+}
+
+function languageMap(customs) {
+  return {...builtinLanguages, ...Object.fromEntries(customs.map(({code, name}) => [code, name]))};
+}
+
+function checkLanguageNames(customs) {
+  const used = new Set(Object.values(builtinLanguages).map(normalized));
+  for (const {name} of customs) {
+    const key = normalized(name);
+    if (!key || used.has(key)) throw new Error("语种显示名称重复或无效，请更换「" + name + "」。");
+    used.add(key);
+  }
+}
+
+function validTranslations(value, knownLanguages) {
   return value && !Array.isArray(value) && typeof value === "object" && Object.entries(value).every(
-    ([code, translation]) => Object.hasOwn(languages, code) && typeof translation === "string" && translation.length <= 4000
+    ([code, translation]) => Object.hasOwn(knownLanguages, code) && typeof translation === "string" && translation.length <= 4000
   );
 }
 
 function restoreLibrary(data) {
-  if (![1, 2].includes(data?.version) || !Array.isArray(data.entries) || data.entries.length > maxEntries) {
+  if (![1, 2, 3].includes(data?.version) || !Array.isArray(data.entries) || data.entries.length > maxEntries) {
     throw new Error("请选择本工具导出的词库备份。词库最多支持 500 条。");
   }
+  if (data.version === 3 && !Array.isArray(data.customLanguages)) throw new Error("备份缺少自定义语种列表。");
+  const customs = data.version === 3 ? data.customLanguages.map(customLanguage) : [];
+  if (new Set(customs.map(item => item.code)).size !== customs.length) throw new Error("备份含重复的语言代码。");
+  checkLanguageNames(customs);
+  const known = languageMap(customs);
   const ids = new Set();
   for (const entry of data.entries) {
     if (!entry || typeof entry.id !== "string" || !/^[\w-]{1,64}$/.test(entry.id) || ids.has(entry.id) ||
         typeof entry.zh !== "string" || !entry.zh.trim() || entry.zh.length > 2000 ||
         typeof entry.category !== "string" || !entry.category.trim() || entry.category.length > 24 ||
         !Array.isArray(entry.keywords) || entry.keywords.some(k => typeof k !== "string") ||
-        entry.keywords.join(", ").length > 300 || !validTranslations(entry.translations) ||
-        (data.version === 2 && !validTranslations(entry.literal))) {
+        entry.keywords.join(", ").length > 300 || !validTranslations(entry.translations, known) ||
+        (data.version >= 2 && !validTranslations(entry.literal, known))) {
       throw new Error("备份中有无效或重复的话术记录。");
     }
     ids.add(entry.id);
   }
-  if (data.version === 2) return data.entries;
+  if (data.version >= 2) return {entries: data.entries, customLanguages: customs};
   const oldById = new Map(legacyBuiltins.map(entry => [entry.id, entry]));
   const newById = new Map(builtins.map(entry => [entry.id, entry]));
   const upgraded = data.entries.map(entry => {
@@ -72,7 +108,7 @@ function restoreLibrary(data) {
     if (!old || !next || old.zh !== entry.zh) return {...entry, literal: {}};
     const translations = {};
     const literal = {};
-    for (const code of Object.keys(languages)) {
+    for (const code of Object.keys(builtinLanguages)) {
       const previous = entry.translations[code];
       const unchanged = previous === old.translations[code];
       translations[code] = unchanged ? next.translations[code] : previous ?? "";
@@ -85,15 +121,17 @@ function restoreLibrary(data) {
     };
   });
   const additions = builtins.filter(entry => !oldById.has(entry.id) && !ids.has(entry.id));
-  return upgraded.concat(additions.slice(0, maxEntries - upgraded.length));
+  return {entries: upgraded.concat(additions.slice(0, maxEntries - upgraded.length)), customLanguages: []};
 }
 
 let entries = builtins;
+let customLanguages = [];
 let loadError = false;
 try {
-  const stored = readStorage(storageKey) ?? readStorage(legacyStorageKey);
-  if (stored) entries = restoreLibrary(JSON.parse(stored));
+  const stored = readStorage(storageKey) ?? legacyStorageKeys.map(readStorage).find(value => value !== null);
+  if (stored) ({entries, customLanguages} = restoreLibrary(JSON.parse(stored)));
 } catch { loadError = true; }
+let languages = languageMap(customLanguages);
 const savedLanguage = readStorage("cs_lang");
 let language = Object.hasOwn(languages, savedLanguage) ? savedLanguage : "en";
 let serviceAvailable = false;
@@ -109,25 +147,29 @@ let apiKey = "";
 let activeTranslation = null;
 let result = null;
 let editing = null;
-let previousEntries = null;
+let previousLibrary = null;
+let editingLanguage = null;
 
 const languageGroups = [$("language-options"), $("library-languages")];
-for (const group of languageGroups) {
-  for (const [code, name] of Object.entries(languages)) {
-    const button = make("button", name);
-    button.type = "button";
-    button.dataset.language = code;
-    button.addEventListener("click", () => {
-      if (language === code) return;
-      language = code;
-      writeStorage("cs_lang", code);
-      resetTranslation();
-      renderLanguages();
-      renderMatches();
-      renderLibrary();
-    });
-    group.append(button);
+function buildLanguageControls() {
+  for (const group of languageGroups) {
+    group.replaceChildren(...Object.entries(languages).map(([code, name]) => {
+      const button = make("button", name);
+      button.type = "button";
+      button.dataset.language = code;
+      button.addEventListener("click", () => {
+        if (language === code) return;
+        language = code;
+        writeStorage("cs_lang", code);
+        resetTranslation();
+        renderLanguages();
+        renderMatches();
+        renderLibrary();
+      });
+      return button;
+    }));
   }
+  renderLanguages();
 }
 
 function renderLanguages() {
@@ -166,6 +208,16 @@ function tokenKey(text) {
 }
 
 const question = /是否|能否|可否|能不能|会不会|吗|怎么|如何|为什么|\?$/u;
+const categoryAliases = new Map([
+  ["退款", "退款"], ["退钱", "退款"], ["退费", "退款"], ["返款", "退款"], ["退款申请", "退款"], ["refund", "退款"],
+  ["订阅", "订阅"], ["续费", "订阅"], ["续订", "订阅"], ["订阅管理", "订阅"], ["subscription", "订阅"]
+]);
+
+function categoryQuery(text) {
+  return normalized(text).replace(/\?+$/u, "").replace(/^(?:我想|想要)?(?:了解|咨询)|^关于/u, "")
+    .replace(/(?:的?相关问题|的问题|方面|这块|问题)$/u, "");
+}
+
 const topics = [
   {
     topic: /退款|退钱|退费|退不了|退还|返款|原路退回|没到账|未到账/u,
@@ -236,7 +288,7 @@ function hasConflict(query, phrase) {
   for (const topic of topics) {
     const left = topicState(query, topic);
     const right = topicState(phrase, topic);
-    if (left && right && left !== right) return true;
+    if (left && right && left !== right && left !== "other" && right !== "other") return true;
     if (left && left === right && left !== "other") classified = true;
   }
   if (classified) return false;
@@ -262,12 +314,23 @@ function similarity(left, right) {
 function rank(query, library) {
   const text = normalized(query);
   if (!text) return [];
+  const subject = categoryQuery(text);
+  const theme = categoryAliases.get(subject) ?? subject;
+  const byCategory = library.filter(entry => normalized(entry.category) === theme);
+  if (byCategory.length || categoryAliases.has(subject)) {
+    const related = categoryAliases.has(subject)
+      ? library.filter(entry => normalized(entry.category) !== theme && [entry.zh, ...entry.keywords].some(value => {
+        const keyword = normalized(value);
+        return keyword.includes(theme) || keyword.includes(subject);
+      })) : [];
+    return byCategory.concat(related).map(entry => ({entry, kind: "主题匹配"}));
+  }
   const input = text.replace(/^(?:麻烦您|麻烦你|请问|请您|请|帮我)/u, "").replace(/(?:一下|吧|呢)$/u, "");
   const hits = [];
   for (const entry of library) {
     const phrase = normalized(entry.zh);
     if (text === phrase && tokenKey(query) === tokenKey(entry.zh)) {
-      hits.push({entry, score: 1});
+      hits.push({entry, score: 1, kind: "原句匹配"});
       continue;
     }
     if (hasConflict(text, phrase)) continue;
@@ -276,12 +339,14 @@ function rank(query, library) {
       const key = normalized(keyword);
       if (key.length > 1 && (text.includes(key) || input === key)) {
         comparison.push(input === key ? 0.91 : 0.63 + 0.22 * key.length / text.length);
+      } else if (input.length > 1 && key.startsWith(input) && input.length >= key.length / 2) {
+        comparison.push(0.57 + 0.18 * input.length / key.length);
       }
     }
     const score = Math.max(...comparison);
-    if (score >= 0.53) hits.push({entry, score});
+    if (score >= 0.53) hits.push({entry, score, kind: "模糊匹配"});
   }
-  return hits.sort((a, b) => b.score - a.score).slice(0, 3);
+  return hits.sort((a, b) => b.score - a.score).slice(0, 5);
 }
 
 async function copy(value, status) {
@@ -339,7 +404,7 @@ function phraseCard(entry, reference) {
   const status = make("p", null, "notice");
   status.setAttribute("role", "status");
   buttons.append(action(reference ? "用这句作原文" : "带入翻译", () => setSource(entry.zh)));
-  if (translation) buttons.append(action(reference === "模糊匹配" ? "复制参考译文" : "复制译文", () =>
+  if (translation) buttons.append(action(reference && reference !== "原句匹配" ? "复制参考译文" : "复制译文", () =>
     copy(translation, (message, kind) => { status.textContent = message; status.dataset.kind = kind || ""; })));
   if (!reference) {
     buttons.append(action("编辑", () => openEditor(entry)), action("删除", () => removeEntry(entry), "danger"));
@@ -351,11 +416,12 @@ function phraseCard(entry, reference) {
 function renderMatches() {
   const area = $("matches");
   const text = source.value.trim();
+  $("match-summary").textContent = "";
   area.replaceChildren();
   area.className = "";
   if (!text) {
     const examples = make("div", null, "examples");
-    for (const example of ["退款审核中", "已退款", "关闭自动续费", "重复扣费"]) {
+    for (const example of ["退款", "退款审核中", "关闭自动续费", "重复扣费"]) {
       examples.append(action(example, () => setSource(example)));
     }
     area.append(make("p", "输入原句或关键词，也可以试试这些常见场景。", "empty"), examples);
@@ -367,7 +433,10 @@ function renderMatches() {
     return;
   }
   area.className = "reference-grid";
-  area.append(...matches.map(hit => phraseCard(hit.entry, hit.score === 1 ? "原句匹配" : "模糊匹配")));
+  $("match-summary").textContent = matches[0].kind === "主题匹配"
+    ? "找到 " + matches.length + " 条相关话术。输入更具体的业务状态可以缩小范围。"
+    : "找到 " + matches.length + " 条参考话术。";
+  area.append(...matches.map(hit => phraseCard(hit.entry, hit.kind)));
 }
 
 function renderLibrary() {
@@ -378,22 +447,45 @@ function renderLibrary() {
   category.value = categories.includes(selected) ? selected : "";
   $("category-options").replaceChildren(...categories.map(name => new Option(name, name)));
   const search = normalized($("search").value);
+  const theme = categoryAliases.get(categoryQuery(search));
   const rows = entries.filter(entry => (!category.value || entry.category === category.value) &&
-    (!search || [entry.zh, entry.category, ...entry.keywords, ...Object.values(entry.translations), ...Object.values(entry.literal)]
+    (!search || (theme && normalized(entry.category) === theme) ||
+      [entry.zh, entry.category, ...entry.keywords, ...Object.values(entry.translations), ...Object.values(entry.literal)]
       .some(value => normalized(value).includes(search))));
   $("library-count").textContent = "显示 " + rows.length + " / " + entries.length + " 条";
   $("library-list").replaceChildren(...(rows.length ? rows.map(entry => phraseCard(entry)) :
     [make("p", "没有找到符合条件的话术。", "empty")]));
 }
 
-function updateLibrary(next, message) {
-  previousEntries = entries;
+function libraryBackup() {
+  return {version: 3, entries, customLanguages};
+}
+
+function applyLibrary(next, nextLanguages) {
   entries = next;
-  const persisted = writeStorage(storageKey, JSON.stringify({version: 2, entries}));
-  notice("libraryMessage", persisted ? message : message + " 浏览器存储不可用，本次修改仅在当前页面保留。", persisted ? "" : "warning");
-  $("undo").hidden = false;
+  if (nextLanguages !== customLanguages) {
+    customLanguages = nextLanguages;
+    languages = languageMap(customLanguages);
+    if (!Object.hasOwn(languages, language)) {
+      language = "en";
+      writeStorage("cs_lang", language);
+    }
+    resetTranslation();
+    buildLanguageControls();
+    renderCustomLanguages();
+    if (editingLanguage && !customLanguages.some(item => item.code === editingLanguage)) fillLanguageForm();
+  }
   renderLibrary();
   renderMatches();
+}
+
+function updateLibrary(next, message, nextLanguages = customLanguages) {
+  previousLibrary = libraryBackup();
+  applyLibrary(next, nextLanguages);
+  const persisted = writeStorage(storageKey, JSON.stringify(libraryBackup()));
+  notice("libraryMessage", persisted ? message : message + " 浏览器存储不可用，本次修改仅在当前页面保留。", persisted ? "" : "warning");
+  $("undo").hidden = false;
+  return persisted;
 }
 
 function removeEntry(entry) {
@@ -401,25 +493,29 @@ function removeEntry(entry) {
   $("undo").focus();
 }
 
-for (const [code, name] of Object.entries(languages)) {
-  $("editor-language").add(new Option(name, code));
-  const group = make("div", null, "entry-fields");
-  group.dataset.code = code;
-  const label = make("label", name + "译文", "field");
-  const area = make("textarea");
-  area.id = "entry-" + code;
-  area.rows = 2;
-  area.maxLength = 4000;
-  area.lang = code;
-  label.append(area);
-  const glossLabel = make("label", "中文直译", "field");
-  const gloss = make("textarea");
-  gloss.id = "entry-literal-" + code;
-  gloss.rows = 2;
-  gloss.maxLength = 4000;
-  glossLabel.append(gloss);
-  group.append(label, glossLabel);
-  $("entry-translations").append(group);
+function buildEditorControls() {
+  $("editor-language").replaceChildren();
+  $("entry-translations").replaceChildren();
+  for (const [code, name] of Object.entries(languages)) {
+    $("editor-language").add(new Option(name, code));
+    const group = make("div", null, "entry-fields");
+    group.dataset.code = code;
+    const label = make("label", name + "译文", "field");
+    const area = make("textarea");
+    area.id = "entry-" + code;
+    area.rows = 2;
+    area.maxLength = 4000;
+    area.lang = code;
+    label.append(area);
+    const glossLabel = make("label", "中文直译", "field");
+    const gloss = make("textarea");
+    gloss.id = "entry-literal-" + code;
+    gloss.rows = 2;
+    gloss.maxLength = 4000;
+    glossLabel.append(gloss);
+    group.append(label, glossLabel);
+    $("entry-translations").append(group);
+  }
 }
 
 function showEditorLanguage() {
@@ -429,6 +525,7 @@ $("editor-language").addEventListener("change", showEditorLanguage);
 
 function openEditor(entry = null, translation = null) {
   editing = entry;
+  buildEditorControls();
   $("editor-title").textContent = entry ? "编辑话术" : "新增话术";
   $("entry-source").value = entry?.zh ?? translation?.source ?? "";
   $("entry-category").value = entry?.category ?? "";
@@ -446,6 +543,15 @@ function openEditor(entry = null, translation = null) {
 
 $("add").addEventListener("click", () => openEditor());
 $("cancel-editor").addEventListener("click", () => $("editor").close());
+
+function parseKeywords(text) {
+  return [...new Set(text.split(/[,，、;；\r\n]+/u).map(word => word.trim()).filter(Boolean))];
+}
+
+function newEntryId() {
+  return "user-" + [...crypto.getRandomValues(new Uint32Array(4))].map(n => n.toString(16).padStart(8, "0")).join("");
+}
+
 $("editor-form").addEventListener("submit", event => {
   event.preventDefault();
   const zh = $("entry-source").value.trim();
@@ -457,15 +563,18 @@ $("editor-form").addEventListener("submit", event => {
   if (editing && !entries.some(entry => entry.id === editing.id)) {
     return notice("editor-status", "此条话术已在其他页面删除，请关闭后重新新增。", "error");
   }
-  const keywords = [...new Set($("entry-keywords").value.split(/[,，、;；]+/u).map(word => word.trim()).filter(Boolean))];
+  const keywords = parseKeywords($("entry-keywords").value);
   if (keywords.join(", ").length > 300) return notice("editor-status", "关键词太长，请缩短后保存。", "error");
-  const translations = Object.fromEntries(Object.keys(languages).map(code => [code, $("entry-" + code).value.trim()]));
-  const literal = Object.fromEntries(Object.keys(languages).map(code => [code, $("entry-literal-" + code).value.trim()]));
+  const current = entries.find(entry => entry.id === editing?.id);
+  const translations = Object.fromEntries(Object.keys(languages).map(code =>
+    [code, $("entry-" + code)?.value.trim() ?? current?.translations[code] ?? ""]));
+  const literal = Object.fromEntries(Object.keys(languages).map(code =>
+    [code, $("entry-literal-" + code)?.value.trim() ?? current?.literal[code] ?? ""]));
   if ([...Object.values(translations), ...Object.values(literal)].some(value => value.length > 4000)) {
     return notice("editor-status", "每种语言的译文及中文直译各限 4000 字。", "error");
   }
   const entry = {
-    id: editing?.id ?? "user-" + [...crypto.getRandomValues(new Uint32Array(4))].map(n => n.toString(16).padStart(8, "0")).join(""),
+    id: editing?.id ?? newEntryId(),
     zh,
     category: $("entry-category").value.trim() || "自定义",
     keywords,
@@ -480,18 +589,16 @@ $("search").addEventListener("input", renderLibrary);
 $("category").addEventListener("change", renderLibrary);
 
 $("undo").addEventListener("click", () => {
-  if (!previousEntries) return;
-  entries = previousEntries;
-  previousEntries = null;
-  const persisted = writeStorage(storageKey, JSON.stringify({version: 2, entries}));
+  if (!previousLibrary) return;
+  applyLibrary(previousLibrary.entries, previousLibrary.customLanguages);
+  previousLibrary = null;
+  const persisted = writeStorage(storageKey, JSON.stringify(libraryBackup()));
   $("undo").hidden = true;
   notice("libraryMessage", persisted ? "已撤销上一次词库更改。" : "当前页面已撤销更改，浏览器未能保存。", persisted ? "" : "warning");
-  renderLibrary();
-  renderMatches();
 });
 
 $("export").addEventListener("click", () => {
-  const data = JSON.stringify({version: 2, entries}, null, 2);
+  const data = JSON.stringify(libraryBackup(), null, 2);
   const url = URL.createObjectURL(new Blob([data], {type: "application/json"}));
   const link = make("a");
   link.href = url;
@@ -510,22 +617,97 @@ $("import-file").addEventListener("change", async event => {
   try {
     if (file.size > 45_000_000) throw new Error("备份文件过大。");
     const next = restoreLibrary(JSON.parse(await file.text()));
-    updateLibrary(next, "已用备份恢复 " + next.length + " 条话术，可撤销。");
+    updateLibrary(next.entries, "已用备份恢复 " + next.entries.length + " 条话术，可撤销。", next.customLanguages);
   } catch (error) {
     notice("libraryMessage", error instanceof SyntaxError ? "无法读取此 JSON 备份文件。" : error.message, "error");
   }
 });
+
+$("export-excel").addEventListener("click", () => {
+  try {
+    XLSX.writeFile(libraryWorkbook(libraryBackup()), "客服常用语词库.xlsx", {bookType: "xlsx", compression: true});
+    notice("libraryMessage", "已生成 Excel 词库。打开「填写说明」查看编辑规则。");
+  } catch (error) {
+    notice("libraryMessage", "导出 Excel 失败。" + (error.message || ""), "error");
+  }
+});
+$("import-excel").addEventListener("click", () => $("import-excel-file").click());
+$("import-excel-file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    if (!/\.xlsx$/i.test(file.name)) throw new Error("请在 Excel 中另存为 .xlsx 后导入。");
+    if (file.size > 45_000_000) throw new Error("Excel 文件过大。");
+    const book = XLSX.read(await file.arrayBuffer(), {type: "array"});
+    const next = importLibraryWorkbook(book, libraryBackup());
+    const {added, updated, removed, languages: changedLanguages} = next.counts;
+    updateLibrary(next.entries, "Excel 已导入。新增 " + added + " 条，更新 " + updated + " 条，删除 " + removed +
+      " 条，语种变更 " + changedLanguages + " 个。可撤销。", next.customLanguages);
+  } catch (error) {
+    notice("libraryMessage", "导入失败。" + (error.message || "请检查 Excel 文件格式。"), "error");
+  }
+});
+
 window.addEventListener("storage", event => {
   if (event.key !== storageKey) return;
   try {
-    entries = event.newValue === null ? builtins : restoreLibrary(JSON.parse(event.newValue));
-    previousEntries = null;
+    const next = event.newValue === null ? {entries: builtins, customLanguages: []} : restoreLibrary(JSON.parse(event.newValue));
+    applyLibrary(next.entries, next.customLanguages);
+    previousLibrary = null;
     $("undo").hidden = true;
     notice("libraryMessage", "已同步其他页面的词库更改。");
-    renderLibrary();
-    renderMatches();
   } catch {
     notice("libraryMessage", "其他页面的词库更改无法读取。", "error");
+  }
+});
+
+function fillLanguageForm(item = null) {
+  editingLanguage = item?.code ?? null;
+  $("custom-language-code").value = item?.code ?? "";
+  $("custom-language-code").readOnly = Boolean(item);
+  $("custom-language-name").value = item?.name ?? "";
+  $("custom-language-guide").value = item?.guide ?? "";
+  $("custom-language-save").textContent = item ? "保存语种" : "添加语种";
+  $("custom-language-cancel").hidden = !item;
+}
+
+function renderCustomLanguages() {
+  const list = $("custom-language-list");
+  list.replaceChildren(...customLanguages.map(item => {
+    const row = make("li", null, "custom-language-row");
+    row.append(make("span", item.name + " [" + item.code + "]"),
+      action("编辑", () => {
+        fillLanguageForm(item);
+        notice("custom-language-status", "");
+        $("custom-language-name").focus();
+      }));
+    return row;
+  }));
+  list.hidden = !customLanguages.length;
+}
+
+$("custom-language-cancel").addEventListener("click", () => fillLanguageForm());
+$("custom-language-form").addEventListener("submit", event => {
+  event.preventDefault();
+  try {
+    const item = customLanguage({
+      code: $("custom-language-code").value,
+      name: $("custom-language-name").value,
+      guide: $("custom-language-guide").value
+    });
+    if (!editingLanguage && Object.hasOwn(languages, item.code)) throw new Error("语言代码已存在，请在列表中编辑。");
+    const next = editingLanguage
+      ? customLanguages.map(other => other.code === item.code ? item : other)
+      : customLanguages.concat(item);
+    checkLanguageNames(next);
+    const message = "已保存「" + item.name + "」。可在词库中填写译文，或导出 Excel 批量编辑。";
+    const persisted = updateLibrary(entries, message, next);
+    fillLanguageForm();
+    notice("custom-language-status", persisted ? message : message + " 浏览器存储不可用，本次修改仅在当前页面保留。",
+      persisted ? "" : "warning");
+  } catch (error) {
+    notice("custom-language-status", error.message, "error");
   }
 });
 
@@ -716,7 +898,7 @@ async function browserTranslation(text, code, controller) {
   if (!("Translator" in globalThis)) {
     throw new Error("此浏览器未提供本地翻译。请用桌面版 Chrome，或配置 AI 客服翻译。");
   }
-  const waitOpening = /^(?:等一下|(?:请(?:您)?)?稍等(?:一下|片刻)?)(?:[。！？!?]\s*|\n+\s*|$)/u.exec(text);
+  const waitOpening = courteousWait[code] && /^(?:等一下|(?:请(?:您)?)?稍等(?:一下|片刻)?)(?:[。！？!?]\s*|\n+\s*|$)/u.exec(text);
   const remaining = waitOpening ? text.slice(waitOpening[0].length) : text;
   if (!remaining) return courteousWait[code];
   const options = {sourceLanguage: "zh", targetLanguage: code, signal: controller.signal};
@@ -738,7 +920,7 @@ async function browserTranslation(text, code, controller) {
     return courteousWait[code] + separator + translated.trim();
   } catch (error) {
     if (controller.signal.aborted) throw error;
-    throw new Error("本地语言包无法使用。请确认 Chrome 可以联网下载语言包，再点击翻译重试，或切换到 AI 客服翻译。");
+    throw new Error("无法使用「" + languages[code] + "」的本地语言包。请确认浏览器支持该语种且能联网下载，或切换到 API 客服翻译。");
   } finally {
     translator?.destroy?.();
   }
@@ -749,8 +931,11 @@ async function aiTranslation(text, code, api, signal) {
   if (!api.key) throw new Error("请在设置中填写 API 密钥。");
   let response;
   try {
+    const locale = customLanguages.find(item => item.code === code);
+    const payload = {text, target: code, api};
+    if (locale) payload.targetLocale = {name: locale.name, guide: locale.guide};
     response = await fetch("/api/translate", {
-      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text, target: code, api}), signal
+      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload), signal
     });
   } catch (error) {
     if (signal.aborted) throw error;
@@ -852,7 +1037,8 @@ $("tone-clear").addEventListener("click", () => {
   $("tone-text").focus();
 });
 
-renderLanguages();
+buildLanguageControls();
+renderCustomLanguages();
 loadSettingsForm();
 renderWorkspace();
 renderMatches();

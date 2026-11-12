@@ -71,12 +71,12 @@ class AIClient:
         self.provider = provider
         self.opener = build_opener(NoRedirect())
 
-    def translate(self, text, target):
+    def translate(self, text, target_description):
         body = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": INSTRUCTIONS},
-                {"role": "user", "content": json.dumps({"目标语言": LANGUAGES[target], "中文原文": text}, ensure_ascii=False)},
+                {"role": "user", "content": json.dumps({"目标语言": target_description, "中文原文": text}, ensure_ascii=False)},
             ],
         }
         token_field = "max_completion_tokens" if self.provider == "openai" else "max_tokens"
@@ -186,14 +186,26 @@ class Handler(BaseHTTPRequestHandler):
         target = request.get("target")
         if not isinstance(text, str) or len(text) > 2000 or not re.search(r"[\u3400-\u9fff\U00020000-\U000323af]", text):
             return self.send_json(400, {"error": "请输入不超过 2000 字的中文原文。"})
-        if not isinstance(target, str) or target not in LANGUAGES:
+        if not isinstance(target, str) or len(target) > 35 or not re.fullmatch(r"[a-z]{2,8}(?:-[a-z0-9]{1,8})*", target):
             return self.send_json(400, {"error": "请选择页面支持的输出语言。"})
+        target_description = LANGUAGES.get(target)
+        if target_description is None:
+            locale = request.get("targetLocale")
+            if not isinstance(locale, dict):
+                return self.send_json(400, {"error": "请在设置中添加此自定义语种。"})
+            name, guide = locale.get("name"), locale.get("guide", "")
+            if (not isinstance(name, str) or not name.strip() or len(name) > 24 or not name.isprintable() or
+                    not isinstance(guide, str) or len(guide) > 120 or (guide and not guide.isprintable())):
+                return self.send_json(400, {"error": "自定义语种的显示名称或翻译要求不符合设置规则。"})
+            target_description = f"{name}（语言代码 {target}）"
+            if guide:
+                target_description += "。表达要求：" + guide
         try:
             client = AIClient(request.get("api"))
         except ValueError as error:
             return self.send_json(400, {"error": str(error)})
         try:
-            translation = client.translate(text.strip(), target)
+            translation = client.translate(text.strip(), target_description)
         except TranslationError as error:
             return self.send_json(502, {"error": str(error)})
         self.send_json(200, {"translation": translation})

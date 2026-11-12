@@ -1,3 +1,4 @@
 * text=auto eol=lf
 *.bat -text !eol whitespace=cr-at-eol
 *.pdf -text
+vendor/sheetjs/xlsx.mini.min.js -text
